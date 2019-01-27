@@ -1,2 +1,1 @@
-# depsolver-StartJava
-Scaffolding for Java projects
+# CO663 Dependency Solver
