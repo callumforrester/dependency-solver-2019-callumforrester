@@ -1,4 +1,24 @@
 #!/usr/bin/python3.7
 
+import sys
+
+from pprint import PrettyPrinter
+from typing import List
+
+from src.package import Package, parse, load_dict
+
+
+def main(argv: List[str]):
+    repository_path = argv[1]
+    initial_state_path = argv[2]
+    constraints_path = argv[3]
+
+    raw = load_dict(repository_path)
+    packages = map(parse, raw)
+    print('Parsing Complete:')
+    pprinter = PrettyPrinter()
+    pprinter.pprint(list(packages))
+
+
 if __name__ == '__main__':
-    print('Hello World')
+    main(sys.argv)
