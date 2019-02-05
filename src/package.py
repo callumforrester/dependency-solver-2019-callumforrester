@@ -4,10 +4,6 @@ from typing import List, Dict, Iterator
 from dataclasses import dataclass
 
 
-# Typedef
-Repository = Dict[str, 'Package']
-
-
 @dataclass
 class Package:
     name: str
@@ -17,7 +13,7 @@ class Package:
     conflicts: List[str]
 
 
-def parse(d: Dict, r: Repository = None) -> Package:
+def parse(d: Dict) -> Package:
     return Package(
         d['name'],
         d['version'],
