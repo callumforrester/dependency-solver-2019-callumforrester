@@ -1,6 +1,6 @@
 import json
 
-from typing import List, Dict, Iterator
+from typing import List, Dict, Iterator, Tuple
 from dataclasses import dataclass
 
 
@@ -11,6 +11,16 @@ class Package:
     size: int
     dependencies: List[List[str]]
     conflicts: List[str]
+
+
+Repository = Dict[Tuple[str, str], Package]
+
+
+def parse_repository(repository: List[Dict]) -> Repository:
+    return {
+        (d['name'], d['version']): parse(d)
+        for d in repository
+    }
 
 
 def parse(d: Dict) -> Package:
