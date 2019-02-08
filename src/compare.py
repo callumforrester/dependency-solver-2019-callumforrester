@@ -1,4 +1,4 @@
-from typing import TypeVar, Callable
+from typing import TypeVar, Callable, List
 
 from src.package import Package, Repository, Constraints
 
@@ -10,6 +10,27 @@ LESS_OR_EQUAL = '<='
 LESS = '<'
 
 # Deps format: [[A OR B] AND [C]]
+
+
+def parse_constraints(repository: Repository,
+                      constraints: List[str]) -> Constraints:
+    dependencies = []
+    conflicts = []
+    for constraint in constraints:
+        command = constraint[0]
+        reference = constraint[1:]
+
+        packages = flatten_reference(repository, reference)
+
+        if command == '+':
+            dependencies += [packages]
+        elif command == '-':
+            conflicts.append(packages)
+        else:
+            raise ValueError(
+                    'Attempted to parse invalid constraint: %s' % constraint)
+
+    return Constraints(dependencies, conflicts)
 
 
 # TODO: Make this less tight-looped
@@ -31,7 +52,7 @@ def flatten_repository(repository: Repository) -> Repository:
     return repository
 
 
-def flatten_reference(repo: Repository, reference: str):
+def flatten_reference(repo: Repository, reference: str) -> List[Package]:
     check = filter_for_operator(reference)
     return list(filter(check, repo.keys()))
 

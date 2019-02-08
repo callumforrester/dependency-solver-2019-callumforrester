@@ -2,12 +2,12 @@ from z3 import Optimize, And, Not, Or, Bool, Implies
 
 from typing import List
 
-from src.package import Package, Repository
+from src.package import Package, Repository, Constraints
 
 GUESS_STEPS = 10
 
 
-def encode(packages: Repository):
+def encode(packages: Repository, final_state_constraints: Constraints):
     s = Optimize()
 
     for package, relations in packages.items():

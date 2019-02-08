@@ -22,7 +22,7 @@ Repository = Dict[Package, Constraints]
 
 def parse_repository(repository: List[Dict]) -> Repository:
     return {
-        parse_package(d): parse_constraints(d)
+        parse_package(d): parse_package_constraints(d)
         for d in repository
     }
 
@@ -35,7 +35,7 @@ def parse_package(d: Dict) -> Package:
     )
 
 
-def parse_constraints(d: Dict) -> Constraints:
+def parse_package_constraints(d: Dict) -> Constraints:
     return Constraints(
         d['depends'] if 'depends' in d else [],
         d['conflicts'] if 'conflicts' in d else []

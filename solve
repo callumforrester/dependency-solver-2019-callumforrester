@@ -7,23 +7,35 @@ from typing import List
 
 from src.package import Package, load_dict, parse_repository
 from src.encode import encode
-from src.compare import flatten_repository
+from src.compare import flatten_repository, parse_constraints
 
 
 def main(argv: List[str]):
+    # Argparse
     repository_path = argv[1]
     initial_state_path = argv[2]
     constraints_path = argv[3]
 
-    raw = load_dict(repository_path)
-    packages = parse_repository(raw)
+    # Parse repo
+    raw_repo = load_dict(repository_path)
+    packages = parse_repository(raw_repo)
     packages = flatten_repository(packages)
-    # pprinter = PrettyPrinter()
-    # pprinter.pprint(packages)
 
-    problem = encode(packages)
-    problem.check()
-    print(problem.model())
+    # Parse constraints
+    raw_constraints = load_dict(constraints_path)
+    final_state_constraints = parse_constraints(packages, raw_constraints)
+
+    pprinter = PrettyPrinter()
+    print('PACKAGES')
+    pprinter.pprint(packages)
+    print('=============')
+    print('FINAL STATE CONSTRAINTS')
+    pprinter.pprint(final_state_constraints)
+    print('=============')
+
+    # problem = encode(packages)
+    # problem.check()
+    # print(problem.model())
 
 
 if __name__ == '__main__':
