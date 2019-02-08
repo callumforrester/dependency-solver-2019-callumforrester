@@ -18,12 +18,12 @@ def main(argv: List[str]):
     raw = load_dict(repository_path)
     packages = parse_repository(raw)
     packages = flatten_repository(packages)
-    pprinter = PrettyPrinter()
-    pprinter.pprint(packages)
-    #
-    # problem = encode(packages)
-    # problem.check()
-    # print(problem.model())
+    # pprinter = PrettyPrinter()
+    # pprinter.pprint(packages)
+
+    problem = encode(packages)
+    problem.check()
+    print(problem.model())
 
 
 if __name__ == '__main__':

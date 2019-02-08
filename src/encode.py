@@ -1,4 +1,4 @@
-import z3
+from z3 import Optimize, And, Not, Or, Bool, Implies
 
 from typing import List
 
@@ -8,31 +8,27 @@ GUESS_STEPS = 10
 
 
 def encode(packages: Repository):
-    s = z3.Optimize()
+    s = Optimize()
 
-    for package in packages.values():
+    for package, relations in packages.items():
         label = to_unique(package)
-        installed = z3.Bool(label)
+        installed = Bool(label)
 
-        # s.add(installed)
-        deps = z3.And([
-            z3.Or([
-                z3.Bool(to_unique(dep)) for dep in dep_ands
-            ]) for dep_ands in package.dependencies
+        #print('AAAAA ==== ' + str(relations))
+        deps = And([
+            Or([Bool(to_unique(dep)) for dep in dep_ands])
+            for dep_ands in relations.dependencies
         ])
+        s.add(Implies(installed, deps))
 
-        conflicts = z3.And([
-            z3.Not(z3.Bool(to_unique(conflict)))
-            for conflict in package.conflicts
+        conflicts = And([
+            Not(Bool(to_unique(conflict)))
+            for conflict in relations.conflicts
         ])
-
-        s.add(z3.Implies(installed, deps))
-        s.add(z3.Implies(installed, conflicts))
+        s.add(Implies(installed, conflicts))
 
         if package.name == 'A':
             s.add(installed)
-        else:
-            s.add(z3.Or(installed, z3.Not(installed)))
     return s
 
 
