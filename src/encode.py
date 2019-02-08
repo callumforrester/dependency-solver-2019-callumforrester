@@ -26,8 +26,14 @@ def encode(packages: Repository, final_state_constraints: Constraints):
         ])
         s.add(Implies(installed, conflicts))
 
-        if package.name == 'A':
-            s.add(installed)
+    for dependency in final_state_constraints.dependencies[0]: # TODO: don't use list of lists
+        label = to_unique(dependency)
+        s.add(Bool(label))
+
+    for conflict in final_state_constraints.conflicts:
+        label = to_unique(dependency)
+        s.add(Not(Bool(label)))
+
     return s
 
 

@@ -34,7 +34,6 @@ def main(argv: List[str]):
     print('=============')
 
     print('MODEL')
-
     problem = encode(packages, final_state_constraints)
     problem.check()
     print(problem.model())
