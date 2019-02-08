@@ -5,7 +5,7 @@ import sys
 from pprint import PrettyPrinter
 from typing import List
 
-from src.package import Package, parse, load_dict, parse_repository
+from src.package import Package, load_dict, parse_repository
 from src.encode import encode
 from src.compare import flatten_repository
 
@@ -20,7 +20,7 @@ def main(argv: List[str]):
     packages = flatten_repository(packages)
     pprinter = PrettyPrinter()
     pprinter.pprint(packages)
-
+    #
     # problem = encode(packages)
     # problem.check()
     # print(problem.model())

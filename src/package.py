@@ -4,31 +4,40 @@ from typing import List, Dict, Iterator, Tuple
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Package:
     name: str
     version: str
+
+
+@dataclass
+class Relations:
     size: int
-    dependencies: List[List[str]]
-    conflicts: List[str]
+    dependencies: List[List[Package]]
+    conflicts: List[Package]
 
 
-Repository = Dict[Tuple[str, str], Package]
+Repository = Dict[Package, Relations]
 
 
 def parse_repository(repository: List[Dict]) -> Repository:
     return {
-        (d['name'], d['version']): parse(d)
+        parse_package(d): parse_relations(d)
         for d in repository
     }
 
 
-def parse(d: Dict) -> Package:
+def parse_package(d: Dict) -> Package:
     return Package(
         d['name'],
-        d['version'],
+        d['version']
+    )
+
+
+def parse_relations(d: Dict) -> Relations:
+    return Relations(
         d['size'],
-        d['dependencies'] if 'dependencies' in d else [],
+        d['depends'] if 'depends' in d else [],
         d['conflicts'] if 'conflicts' in d else []
     )
 
