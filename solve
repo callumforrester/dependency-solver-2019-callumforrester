@@ -33,9 +33,11 @@ def main(argv: List[str]):
     pprinter.pprint(final_state_constraints)
     print('=============')
 
-    # problem = encode(packages)
-    # problem.check()
-    # print(problem.model())
+    print('MODEL')
+
+    problem = encode(packages, final_state_constraints)
+    problem.check()
+    print(problem.model())
 
 
 if __name__ == '__main__':
