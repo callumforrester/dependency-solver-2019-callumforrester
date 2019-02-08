@@ -1,6 +1,6 @@
 from typing import TypeVar, Callable
 
-from src.package import Package, Repository, Relations
+from src.package import Package, Repository, Constraints
 
 
 GREATER = '>'
@@ -24,8 +24,7 @@ def flatten_repository(repository: Repository) -> Repository:
             dependencies.append(new_disjunct)
         for conflict in relations.conflicts:
             conflicts += flatten_reference(repository, conflict)
-        repository[package] = Relations(
-            relations.size,
+        repository[package] = Constraints(
             dependencies,
             conflicts
         )

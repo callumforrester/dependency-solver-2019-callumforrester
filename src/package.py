@@ -1,6 +1,6 @@
 import json
 
-from typing import List, Dict, Iterator, Tuple
+from typing import List, Dict, Iterator
 from dataclasses import dataclass
 
 
@@ -8,21 +8,21 @@ from dataclasses import dataclass
 class Package:
     name: str
     version: str
+    size: int
 
 
 @dataclass
-class Relations:
-    size: int
+class Constraints:
     dependencies: List[List[Package]]
     conflicts: List[Package]
 
 
-Repository = Dict[Package, Relations]
+Repository = Dict[Package, Constraints]
 
 
 def parse_repository(repository: List[Dict]) -> Repository:
     return {
-        parse_package(d): parse_relations(d)
+        parse_package(d): parse_constraints(d)
         for d in repository
     }
 
@@ -30,13 +30,13 @@ def parse_repository(repository: List[Dict]) -> Repository:
 def parse_package(d: Dict) -> Package:
     return Package(
         d['name'],
-        d['version']
+        d['version'],
+        d['size']
     )
 
 
-def parse_relations(d: Dict) -> Relations:
-    return Relations(
-        d['size'],
+def parse_constraints(d: Dict) -> Constraints:
+    return Constraints(
         d['depends'] if 'depends' in d else [],
         d['conflicts'] if 'conflicts' in d else []
     )

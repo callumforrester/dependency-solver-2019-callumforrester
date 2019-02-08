@@ -14,7 +14,6 @@ def encode(packages: Repository):
         label = to_unique(package)
         installed = Bool(label)
 
-        #print('AAAAA ==== ' + str(relations))
         deps = And([
             Or([Bool(to_unique(dep)) for dep in dep_ands])
             for dep_ands in relations.dependencies
