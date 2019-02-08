@@ -21,7 +21,7 @@ def flatten_repository(repository: Repository) -> Repository:
             new_disjunct = []
             for dependency in dependency_disjunct:
                 new_disjunct += flatten_reference(repository, dependency)
-            dependencies += new_disjunct
+            dependencies.append(new_disjunct)
         for conflict in relations.conflicts:
             conflicts += flatten_reference(repository, conflict)
         repository[package] = Relations(
@@ -57,7 +57,8 @@ def filter_for(reference: str, operator: str) -> Callable[[Package], bool]:
     name = args[0]
     version = args[1]
 
-    return lambda p: p.name == name and p.version == version
+    cmp = compare(operator)
+    return lambda p: p.name == name and cmp(p.version, version)
 
 
 TComparable = TypeVar('TComparable')
