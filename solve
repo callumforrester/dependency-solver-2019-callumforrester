@@ -5,9 +5,9 @@ import sys
 from pprint import PrettyPrinter
 from typing import List
 
-from src.package import Package, load_dict, parse_repository
-from src.encode import encode
-from src.compare import flatten_repository, parse_constraints
+from src.package import load_dict, parse_repository, parse_command_list
+# from src.encode import encode
+# from src.compare import flatten_repository, parse_constraints
 
 
 def main(argv: List[str]):
@@ -19,24 +19,24 @@ def main(argv: List[str]):
     # Parse repo
     raw_repo = load_dict(repository_path)
     packages = parse_repository(raw_repo)
-    packages = flatten_repository(packages)
+    # packages = flatten_repository(packages)
 
     # Parse constraints
     raw_constraints = load_dict(constraints_path)
-    final_state_constraints = parse_constraints(packages, raw_constraints)
+    final_state_constraints = parse_command_list(raw_constraints)
 
     pprinter = PrettyPrinter()
     print('PACKAGES')
-    pprinter.pprint(packages)
+    pprinter.pprint(list(packages))
     print('=============')
     print('FINAL STATE CONSTRAINTS')
     pprinter.pprint(final_state_constraints)
     print('=============')
 
-    print('MODEL')
-    problem = encode(packages, final_state_constraints)
-    problem.check()
-    print(problem.model())
+    # print('MODEL')
+    # problem = encode(packages, final_state_constraints)
+    # problem.check()
+    # print(problem.model())
 
 
 if __name__ == '__main__':
