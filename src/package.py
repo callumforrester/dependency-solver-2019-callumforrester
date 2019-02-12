@@ -1,9 +1,9 @@
 import json
 import re
 
-from typing import List, Dict, Iterator, Iterable, Callable
-from dataclasses import dataclass
-from functools import partial
+from typing import List, Dict, Iterator, Iterable, Callable, Union
+from dataclasses import dataclass, field
+from enum import Enum
 
 from src.compare import compare
 
@@ -19,26 +19,49 @@ old_map = map
 map = lambda fn, it: list(old_map(fn, it))
 
 
+# PackageGroup = Iterable['Package']
+Constraint = Union['PackageGroup', 'PackageReference']
+
+
 @dataclass
-class PackageReference:
+class PackageIdentifier:
     name: str
     version: Version
+    unique_name: str = field(init=False)
+
+    def __post_init__(self):
+        self.unique_name = '%s_%s' % (self.name, self.version)
+
+
+@dataclass
+class PackageReference:
+    identifier: PackageIdentifier
     compare: Callable[[Version, Version], bool]
 
 
 @dataclass
+class PackageGroup:
+    identifier: PackageIdentifier
+    packages: Iterable['Package']
+
+
+class CommandSort(Enum):
+    INSTALL = '+'
+    UNINSTALL = '-'
+
+
+@dataclass
 class Command:
-    plus_minus: str
+    sort: CommandSort
     reference: PackageReference
 
 
 @dataclass
 class Package:
-    name: str
-    version: Version
+    identifier: PackageIdentifier
     size: int
-    dependencies: List[List[PackageReference]]
-    conflicts: List[PackageReference]
+    dependencies: List[List[Constraint]]
+    conflicts: List[Constraint]
 
 
 def parse_repository(repository: List[Dict]) -> Iterable[Package]:
@@ -47,8 +70,7 @@ def parse_repository(repository: List[Dict]) -> Iterable[Package]:
 
 def parse_package(d: Dict) -> Package:
     return Package(
-        d['name'],
-        parse_version(d['version']),
+        PackageIdentifier(d['name'], parse_version(d['version'])),
         d['size'],
         parse_dependencies(d['depends']) if 'depends' in d else [],
         parse_package_references(d['conflicts']) if 'conflicts' in d else []
@@ -56,7 +78,6 @@ def parse_package(d: Dict) -> Package:
 
 
 def parse_version(version: str) -> Version:
-    # return list(map(int, version.split('.')))
     return version
 
 
@@ -86,12 +107,12 @@ def parse_command(command: str) -> Command:
     plus_minus, name, operator, version = re.compile(COMMAND_REGEX)\
                                             .match(command)\
                                             .groups()
-    return Command(plus_minus, make_package_reference(name, version, operator))
+    return Command(CommandSort(plus_minus), make_package_reference(name, version, operator))
 
 
 def make_package_reference(name, version, operator) -> PackageReference:
             parsed_version = parse_version(version) if version else None
-            return PackageReference(name, parsed_version,
+            return PackageReference(PackageIdentifier(name, parsed_version),
                                     compare(operator) if operator else None)
 
 
