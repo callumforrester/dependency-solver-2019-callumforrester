@@ -8,7 +8,7 @@ from functools import partial
 from src.compare import compare
 
 
-Version = List[int]
+Version = str
 
 
 PACKAGE_REFERENCE_REGEX = '([.+a-zA-Z0-9-]+)(?:(>=|<=|=|<|>)(\d+(?:\.\d+)*))?'
@@ -23,7 +23,7 @@ map = lambda fn, it: list(old_map(fn, it))
 class PackageReference:
     name: str
     version: Version
-    compare: Callable[[Version], bool]
+    compare: Callable[[Version, Version], bool]
 
 
 @dataclass
@@ -41,10 +41,7 @@ class Package:
     conflicts: List[PackageReference]
 
 
-Repository = Iterable[Package]
-
-
-def parse_repository(repository: List[Dict]) -> Repository:
+def parse_repository(repository: List[Dict]) -> Iterable[Package]:
     return map(parse_package, repository)
 
 
@@ -59,7 +56,8 @@ def parse_package(d: Dict) -> Package:
 
 
 def parse_version(version: str) -> Version:
-    return list(map(int, version.split('.')))
+    # return list(map(int, version.split('.')))
+    return version
 
 
 def parse_dependencies(dependencies: List[List[str]]) -> Iterable[Iterable[
@@ -94,8 +92,7 @@ def parse_command(command: str) -> Command:
 def make_package_reference(name, version, operator) -> PackageReference:
             parsed_version = parse_version(version) if version else None
             return PackageReference(name, parsed_version,
-                                    partial(compare(operator), parsed_version)
-                                    if operator else None)
+                                    compare(operator) if operator else None)
 
 
 def load_dict(file_path: str) -> Iterator[Dict]:
