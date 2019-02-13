@@ -23,7 +23,7 @@ def to_command(model: ModelRef, before: Dict[PackageIdentifier, BoolRef],
     for p in before.keys():
         installed_before = bool(model.eval(before[p]))
         installed_after = bool(model.eval(after[p]))
-        print('%s -> %s' % (installed_before, installed_after))
+        # print('%s -> %s' % (installed_before, installed_after))
         if (not installed_before) and installed_after:
             return Command(CommandSort.INSTALL, p)
         elif installed_before and (not installed_after):

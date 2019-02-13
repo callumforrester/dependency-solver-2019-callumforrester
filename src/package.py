@@ -82,8 +82,10 @@ def parse_package(d: Dict) -> Package:
     )
 
 
-def parse_initial_state(initial_state: List[str]) -> Iterable[Package]:
-    return map(lambda r: r.packages[0], parse_package_references(initial_state))
+def parse_initial_state(initial_state: List[str]) -> Iterable[PackageIdentifier]:
+    return map(lambda r: r.packages[0].identifier,
+               parse_package_references(initial_state))
+    # TODO: Expand
 
 
 def parse_version(version: str) -> Version:

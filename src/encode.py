@@ -2,13 +2,15 @@ import itertools
 
 from z3 import Optimize, And, Not, Or, Bool, Implies, If, Sum, BoolRef
 
-from typing import Iterable, TypeVar, Tuple, Dict
+from typing import Iterable, TypeVar, Tuple, Dict, Set
 
 from src.package import Package, Command, CommandSort, Constraint, \
                         PackageIdentifier
 from src.expand import expand_repository, expand_commands
 
 GUESS_STEPS = 10
+
+UNINSTALL_COST = 1000000
 
 BoolRepository = Dict[int, Dict[PackageIdentifier, BoolRef]]
 
@@ -17,7 +19,7 @@ BoolRepository = Dict[int, Dict[PackageIdentifier, BoolRef]]
 def encode(bools: BoolRepository,
            repository: Iterable[Package],
            final_state_constraints: Iterable[Command],
-           initial_state: Iterable[Package],
+           initial_state: Iterable[PackageIdentifier],
            time_range: Iterable[int]) -> Optimize:
     s = Optimize()
 
@@ -34,16 +36,25 @@ def encode(bools: BoolRepository,
         formula = And(constrain_repository(bools, repository, step),
                       constrain_commands(bools, final_state_constraints,
                                          final_time),
-                      constrain_initial_state(bools, initial_state),
+                      constrain_initial_state(bools, set(initial_state)),
                       constrain_all_delta(bools, repository, time_range))
         s.add(formula)
+
+    s.minimize(total_cost(bools, repository, time_range))
 
     print(s)
     return s
 
 
+def total_cost(bools: BoolRepository, repository: Iterable[Package],
+               time_steps: Iterable[int]) -> BoolRef:
+    return Sum([cost(bools[f][p.identifier], bools[t][p.identifier], p.size, UNINSTALL_COST)
+                for p in repository
+                for f, t in neighbours(time_steps)])
+
+
 def constrain_all_delta(bools: BoolRepository, repository: Iterable[Package],
-                        time_steps: Iterable[int]) -> And:
+                        time_steps: Iterable[int]) -> BoolRef:
     return And([constrain_delta(bools, repository, f, t)
                 for f, t in neighbours(time_steps)])
 
@@ -63,13 +74,18 @@ def constrain_delta(bools: BoolRepository, repository: Iterable[Package],
                 for p in repository]) <= 1
 
 
-def delta(b0: Bool, b1: Bool) -> If:
+def delta(b0: BoolRef, b1: BoolRef) -> BoolRef:
     return If(b0 == b1, 0, 1)
 
 
+def cost(b0: BoolRef, b1: BoolRef, install_cost: int, uninstall_cost: int) -> BoolRef:
+    return If(And(Not(b0), b1), install_cost, If(And(b0, Not(b1)), uninstall_cost, 0))
+
+
 def constrain_initial_state(bools: BoolRepository,
-                            initial_state: Iterable[Package]) -> BoolRef:
-    return And([to_bool(package.identifier, 0) for package in initial_state])
+                            initial_state: Set[PackageIdentifier]) -> BoolRef:
+    initial_bools = bools[0]
+    return And([initial_bools[i] == (i in initial_state) for i, p in initial_bools.items()])
 
 
 def constrain_repository(bools: BoolRepository, repository: Iterable[Package],
