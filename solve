@@ -45,7 +45,8 @@ def main(argv: List[str]):
     problem = encode(packages, final_state_constraints, initial_state)
     was_sat = problem.check()
     if was_sat == z3.sat:
-        print(problem.model())
+        model = problem.model()
+        print(model)
     elif was_sat == z3.unknown:
         print('Unknown')
     else:

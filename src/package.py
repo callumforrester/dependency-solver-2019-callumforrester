@@ -23,14 +23,13 @@ map = lambda fn, it: list(old_map(fn, it))
 Constraint = Union['PackageGroup', 'PackageReference']
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class PackageIdentifier:
     name: str
     version: Version
-    unique_name: str = field(init=False)
 
-    def __post_init__(self):
-        self.unique_name = '%s_%s' % (self.name, self.version)
+    def unique_name(self) -> str:
+        return '%s_%s' % (self.name, self.version)
 
 
 @dataclass
