@@ -10,21 +10,23 @@ from src.expand import expand_repository, expand_commands
 
 GUESS_STEPS = 10
 
-BoolRepository = Dict[Dict[PackageIdentifier, int], BoolRef]
+BoolRepository = Dict[int, Dict[PackageIdentifier, BoolRef]]
 
 
 # TODO: Initial states
-def encode(repository: Iterable[Package],
+def encode(bools: BoolRepository,
+           repository: Iterable[Package],
            final_state_constraints: Iterable[Command],
-           initial_state: Iterable[Package]) -> Optimize:
+           initial_state: Iterable[Package],
+           time_range: Iterable[int]) -> Optimize:
     s = Optimize()
 
     repository = list(expand_repository(repository))
     final_state_constraints = expand_commands(repository,
                                               final_state_constraints)
 
-    time_range = list(range(GUESS_STEPS))
-    bools = to_bools(repository, time_range)
+    # time_range = list(range(GUESS_STEPS))
+    # bools = to_bools(repository, time_range)
 
     final_time = GUESS_STEPS - 1
 
@@ -56,8 +58,8 @@ def neighbours(it: Iterable[TNeighbour]) -> Iterable[
 
 def constrain_delta(bools: BoolRepository, repository: Iterable[Package],
                     from_time: int, to_time: int) -> BoolRef:
-    return Sum([delta(bools[(p.identifier, from_time)],
-                      bools[(p.identifier, to_time)])
+    return Sum([delta(bools[from_time][p.identifier],
+                      bools[to_time][p.identifier])
                 for p in repository]) <= 1
 
 
@@ -77,7 +79,7 @@ def constrain_repository(bools: BoolRepository, repository: Iterable[Package],
 
 def constrain_package(bools: BoolRepository,
                       package: Package, at_time: int) -> BoolRef:
-    installed = bools[(package.identifier, at_time)]
+    installed = bools[at_time][package.identifier]
 
     cst = []
     if package.dependencies:
@@ -132,13 +134,13 @@ def require(bools: Iterable[BoolRef],
 
 def find_bools(bools: BoolRepository, constraint: Constraint,
                at_time: int) -> Iterable[BoolRef]:
-    return map(lambda p: bools[(p.identifier, at_time)], constraint.packages)
+    return map(lambda p: bools[at_time][p.identifier], constraint.packages)
 
 
 def to_bools(repository: Iterable[Package],
              time_range: Iterable[int]) -> BoolRepository:
-    return {(p.identifier, t): to_bool(p.identifier, t)
-            for p, t in itertools.product(repository, time_range)}
+    return {t: {p.identifier: to_bool(p.identifier, t) for p in repository}
+            for t in time_range}
 
 
 def to_bool(package_identifier: PackageIdentifier, time_step: int) -> Bool:

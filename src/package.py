@@ -54,6 +54,9 @@ class Command:
     sort: CommandSort
     reference: Constraint
 
+    def __str__(self) -> str:
+        return '%s%s' % (self.sort.value, self.reference)
+
 
 @dataclass
 class Package:

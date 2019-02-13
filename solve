@@ -8,7 +8,8 @@ from typing import List
 
 from src.package import load_dict, parse_repository, parse_command_list, \
                         parse_initial_state
-from src.encode import encode
+from src.encode import encode, to_bools, GUESS_STEPS
+from src.decode import decode
 # from src.compare import flatten_repository, parse_constraints
 
 
@@ -42,15 +43,22 @@ def main(argv: List[str]):
     print('=============')
 
     print('MODEL')
-    problem = encode(packages, final_state_constraints, initial_state)
+    time_range = list(range(GUESS_STEPS))
+    bools = to_bools(packages, time_range)
+    problem = encode(bools, packages, final_state_constraints, initial_state, time_range)
     was_sat = problem.check()
     if was_sat == z3.sat:
         model = problem.model()
         print(model)
+        print('COMMANDS')
+        commands = decode(model, bools, packages, time_range)
+        print(commands)
+        print('=============')
     elif was_sat == z3.unknown:
         print('Unknown')
     else:
         print('Impossible')
+    print('=============')
 
 
 if __name__ == '__main__':
