@@ -7,9 +7,10 @@ from pprint import PrettyPrinter
 from typing import List
 
 from src.package import load_dict, parse_repository, parse_command_list, \
-                        parse_initial_state
+                        parse_package_reference
 from src.encode import encode, to_bools, GUESS_STEPS
 from src.decode import decode
+from src.expand import expand_reference
 # from src.compare import flatten_repository, parse_constraints
 
 
@@ -29,7 +30,8 @@ def main(argv: List[str]):
     final_state_constraints = parse_command_list(raw_constraints)
 
     raw_initial = load_dict(initial_state_path)
-    initial_state = parse_initial_state(raw_initial)
+    initial_state = list(map(expand_reference, map(parse_package_reference, raw_initial)))
+
 
     pprinter = PrettyPrinter()
     print('PACKAGES')

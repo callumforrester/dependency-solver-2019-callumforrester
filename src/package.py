@@ -81,13 +81,6 @@ def parse_package(d: Dict) -> Package:
         parse_package_references(d['conflicts']) if 'conflicts' in d else []
     )
 
-
-def parse_initial_state(initial_state: List[str]) -> Iterable[PackageIdentifier]:
-    return map(lambda r: r.packages[0].identifier,
-               parse_package_references(initial_state))
-    # TODO: Expand
-
-
 def parse_version(version: str) -> Version:
     return version
 
