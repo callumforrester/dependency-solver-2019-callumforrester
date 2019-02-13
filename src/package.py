@@ -53,7 +53,7 @@ class CommandSort(Enum):
 @dataclass
 class Command:
     sort: CommandSort
-    reference: PackageReference
+    reference: Constraint
 
 
 @dataclass
