@@ -10,18 +10,20 @@ from src.encode import BoolRepository, neighbours
 def decode(model: ModelRef, bools: BoolRepository,
            repository: Iterable[Package], time_steps: Iterable[int]) -> Iterable[Command]:
     sequence = filter(is_not_none,
-                      (to_command(bools[t0], bools[t1])
+                      (to_command(model, bools[t0], bools[t1])
                        for t0, t1 in neighbours(time_steps)))
     return list(sequence)
 
 
-def to_command(before: Dict[PackageIdentifier, BoolRef],
+def to_command(model: ModelRef, before: Dict[PackageIdentifier, BoolRef],
                after: Dict[PackageIdentifier, BoolRef]) -> Command:
-    packages = set(before) - set(after)
+    # packages = set(before) - set(after)
+    # print('%s -> %s' % (before, after))
 
-    for p in packages:
-        installed_before = bool(before[p])
-        installed_after = bool(after[p])
+    for p in before.keys():
+        installed_before = bool(model.eval(before[p]))
+        installed_after = bool(model.eval(after[p]))
+        print('%s -> %s' % (installed_before, installed_after))
         if (not installed_before) and installed_after:
             return Command(CommandSort.INSTALL, p)
         elif installed_before and (not installed_after):

@@ -52,7 +52,7 @@ def main(argv: List[str]):
         print(model)
         print('COMMANDS')
         commands = decode(model, bools, packages, time_range)
-        print(commands)
+        print(list(map(str, commands)))
         print('=============')
     elif was_sat == z3.unknown:
         print('Unknown')
