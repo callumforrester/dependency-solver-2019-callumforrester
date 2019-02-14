@@ -42,12 +42,13 @@ def encode(bools: BoolRepository,
 
     s.minimize(total_cost(bools, repository, time_range))
 
-    print(s)
+    # print(s)
     return s
 
 
 def total_cost(bools: BoolRepository, repository: Iterable[Package],
                time_steps: Iterable[int]) -> BoolRef:
+    print('COST CONSTRAINT')
     return Sum([cost(bools[f][p.identifier], bools[t][p.identifier], p.size, UNINSTALL_COST)
                 for p in repository
                 for f, t in neighbours(time_steps)])
@@ -55,6 +56,7 @@ def total_cost(bools: BoolRepository, repository: Iterable[Package],
 
 def constrain_all_delta(bools: BoolRepository, repository: Iterable[Package],
                         time_steps: Iterable[int]) -> BoolRef:
+    print('DELTA CONSTRAINT')
     return And([constrain_delta(bools, repository, f, t)
                 for f, t in neighbours(time_steps)])
 
@@ -90,6 +92,7 @@ def constrain_initial_state(bools: BoolRepository,
 
 def constrain_repository(bools: BoolRepository, repository: Iterable[Package],
                          at_time: int) -> BoolRef:
+    print('RELATIONSHIPS CONSTRAINT')
     return And([constrain_package(bools, p, at_time) for p in repository])
 
 
@@ -114,6 +117,7 @@ def constrain_package(bools: BoolRepository,
 def constrain_commands(bools: BoolRepository,
                        commands: Iterable[Command],
                        final_time: int) -> BoolRef:
+    print('FINAL STATE CONSTRAINT')
     return And([command_to_bool(bools, c, final_time) for c in commands])
 
 

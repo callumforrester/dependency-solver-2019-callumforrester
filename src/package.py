@@ -75,14 +75,11 @@ def parse_repository(repository: List[Dict]) -> Iterable[Package]:
 
 def parse_package(d: Dict) -> Package:
     return Package(
-        PackageIdentifier(d['name'], parse_version(d['version'])),
+        PackageIdentifier(d['name'], d['version']),
         d['size'],
         parse_dependencies(d['depends']) if 'depends' in d else [],
         parse_package_references(d['conflicts']) if 'conflicts' in d else []
     )
-
-def parse_version(version: str) -> Version:
-    return version
 
 
 def parse_dependencies(dependencies: List[List[str]]) -> Iterable[Iterable[
@@ -115,7 +112,7 @@ def parse_command(command: str) -> Command:
 
 
 def make_package_reference(name, version, operator) -> PackageReference:
-            parsed_version = parse_version(version) if version else None
+            parsed_version = version or None
             return PackageReference(PackageIdentifier(name, parsed_version),
                                     compare(operator) if operator else None)
 

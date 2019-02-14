@@ -1,6 +1,4 @@
-import itertools
-
-from z3 import ModelRef, Z3PPObject, BoolRef
+from z3 import ModelRef, BoolRef
 from typing import Iterable, Dict, Any
 
 from src.package import Command, CommandSort, Package, PackageIdentifier

@@ -21,41 +21,48 @@ def main(argv: List[str]):
     constraints_path = argv[3]
 
     # Parse repo
+    print('1. parse repo')
     raw_repo = load_dict(repository_path)
     packages = parse_repository(raw_repo)
     # packages = flatten_repository(packages)
 
     # Parse constraints
+    print('2. parse final state')
     raw_constraints = load_dict(constraints_path)
     final_state_constraints = parse_command_list(raw_constraints)
 
+    print('3. parse initial state')
     raw_initial = load_dict(initial_state_path)
-    initial_state = list(map(expand_reference, map(parse_package_reference, raw_initial)))
+    initial_state = list(map(lambda r: expand_reference(packages, r), map(parse_package_reference, raw_initial)))
 
 
-    pprinter = PrettyPrinter()
-    print('PACKAGES')
-    pprinter.pprint(list(packages))
-    print('=============')
-    print('INITIAL STATE CONSTRAINTS')
-    pprinter.pprint(initial_state)
-    print('=============')
-    print('FINAL STATE CONSTRAINTS')
-    pprinter.pprint(final_state_constraints)
-    print('=============')
+    # pprinter = PrettyPrinter()
+    # print('PACKAGES')
+    # pprinter.pprint(list(packages))
+    # print('=============')
+    # print('INITIAL STATE CONSTRAINTS')
+    # pprinter.pprint(initial_state)
+    # print('=============')
+    # print('FINAL STATE CONSTRAINTS')
+    # pprinter.pprint(final_state_constraints)
+    # print('=============')
 
     print('MODEL')
     time_range = list(range(GUESS_STEPS))
+    print('4. build package vars')
     bools = to_bools(packages, time_range)
+    print('5. encode')
     problem = encode(bools, packages, final_state_constraints, initial_state, time_range)
+    print('5. check')
     was_sat = problem.check()
     if was_sat == z3.sat:
         model = problem.model()
-        print(model)
-        print('COMMANDS')
+        # print(model)
+        # print('COMMANDS')
+        print('5. decode')
         commands = decode(model, bools, packages, time_range)
         print(list(map(str, commands)))
-        print('=============')
+        # print('=============')
     elif was_sat == z3.unknown:
         print('Unknown')
     else:
