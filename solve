@@ -23,7 +23,7 @@ def main(argv: List[str]):
     # Parse repo
     print('1. parse repo')
     raw_repo = load_dict(repository_path)
-    packages = parse_repository(raw_repo)
+    packages = list(parse_repository(raw_repo))
     # packages = flatten_repository(packages)
 
     # Parse constraints
@@ -36,16 +36,16 @@ def main(argv: List[str]):
     initial_state = list(map(lambda r: expand_reference(packages, r), map(parse_package_reference, raw_initial)))
 
 
-    # pprinter = PrettyPrinter()
-    # print('PACKAGES')
-    # pprinter.pprint(list(packages))
-    # print('=============')
-    # print('INITIAL STATE CONSTRAINTS')
-    # pprinter.pprint(initial_state)
-    # print('=============')
-    # print('FINAL STATE CONSTRAINTS')
-    # pprinter.pprint(final_state_constraints)
-    # print('=============')
+    pprinter = PrettyPrinter()
+    print('PACKAGES')
+    pprinter.pprint(list(packages))
+    print('=============')
+    print('INITIAL STATE CONSTRAINTS')
+    pprinter.pprint(initial_state)
+    print('=============')
+    print('FINAL STATE CONSTRAINTS')
+    pprinter.pprint(final_state_constraints)
+    print('=============')
 
     print('MODEL')
     time_range = list(range(GUESS_STEPS))

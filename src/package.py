@@ -8,25 +8,16 @@ from enum import Enum
 from src.compare import compare
 
 
-Version = str
-
-
 PACKAGE_REFERENCE_REGEX = '([.+a-zA-Z0-9-]+)(?:(>=|<=|=|<|>)(\d+(?:\.\d+)*))?'
 COMMAND_REGEX = '([+-])%s' % PACKAGE_REFERENCE_REGEX
 
-
-old_map = map
-map = lambda fn, it: list(old_map(fn, it))
-
-
-# PackageGroup = Iterable['Package']
 Constraint = Union['PackageGroup', 'PackageReference']
 
 
 @dataclass(eq=True, frozen=True)
 class PackageIdentifier:
     name: str
-    version: Version
+    version: str
 
     def __str__(self) -> str:
         return '%s=%s' % (self.name, self.version)
@@ -35,7 +26,7 @@ class PackageIdentifier:
 @dataclass
 class PackageReference:
     identifier: PackageIdentifier
-    compare: Callable[[Version, Version], bool]
+    compare: Callable[[str, str], bool]
 
 
 @dataclass

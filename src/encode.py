@@ -21,6 +21,7 @@ def encode(bools: BoolRepository,
            final_state_constraints: Iterable[Command],
            initial_state: Iterable[PackageIdentifier],
            time_range: Iterable[int]) -> Optimize:
+
     s = Optimize()
 
     repository = list(expand_repository(repository))
@@ -41,8 +42,6 @@ def encode(bools: BoolRepository,
         s.add(formula)
 
     s.minimize(total_cost(bools, repository, time_range))
-
-    # print(s)
     return s
 
 
