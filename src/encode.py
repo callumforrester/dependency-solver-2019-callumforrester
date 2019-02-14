@@ -164,4 +164,4 @@ def to_bools(repository: Iterable[Package],
 
 
 def to_bool(package_identifier: PackageIdentifier, time_step: int) -> Bool:
-    return Bool('%s_%i' % (package_identifier.unique_name(), time_step))
+    return Bool('%s_%i' % (package_identifier, time_step))

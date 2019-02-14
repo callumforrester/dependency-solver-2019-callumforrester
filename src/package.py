@@ -28,9 +28,6 @@ class PackageIdentifier:
     name: str
     version: Version
 
-    def unique_name(self) -> str:
-        return '%s_%s' % (self.name, self.version)
-
     def __str__(self) -> str:
         return '%s=%s' % (self.name, self.version)
 
