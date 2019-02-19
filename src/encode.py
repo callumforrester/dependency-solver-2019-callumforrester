@@ -1,13 +1,13 @@
 import itertools
 
+from tqdm import tqdm
 from z3 import Optimize, And, Not, Or, Bool, Implies, If, Sum, BoolRef
-
 from typing import Iterable, TypeVar, Tuple, Dict, Set, List
 
 from src.package import Package, Command, CommandSort, PackageReference, PackageGroup
 from src.expand import expand_repository, expand_commands
 
-GUESS_STEPS = 10
+GUESS_STEPS = 100
 
 UNINSTALL_COST = 1000000
 
@@ -36,9 +36,9 @@ def encode(repository: PackageGroup,
 
 
 def total_cost(bools: BoolRepository, repository: PackageGroup) -> BoolRef:
-    print('COST CONSTRAINT')
+    print('cost constraint')
     costs = [cost(repository, from_state, to_state)
-             for from_state, to_state in neighbours(bools)]
+             for from_state, to_state in tqdm(neighbours(bools))]
     return Sum(costs)
 
 
@@ -57,9 +57,9 @@ def cst(repository, states):
 
 
 def constrain_delta(bools: BoolRepository) -> BoolRef:
-    print('DELTA CONSTRAINT')
+    print('delta constraint')
     deltas = [delta(from_state, to_state) <= 1
-              for from_state, to_state in neighbours(bools)]
+              for from_state, to_state in tqdm(neighbours(bools))]
     return And(deltas)
 
 
@@ -83,9 +83,9 @@ def constrain_initial_state(bools: BoolGroup,
 
 
 def constrain_repository(bools: BoolRepository, repository: PackageGroup) -> BoolRef:
-    print('RELATIONSHIPS CONSTRAINT')
+    print('relationships constraint')
     return And([constrain_package(b, i, p)
-                for b in bools for i, p in repository.items()])
+                for i, p in tqdm(repository.items()) for b in bools])
 
 
 def constrain_package(bools: BoolGroup,
@@ -109,8 +109,8 @@ def constrain_package(bools: BoolGroup,
 
 def constrain_commands(bools: BoolGroup,
                        commands: Iterable[Command]) -> BoolRef:
-    print('FINAL STATE CONSTRAINT')
-    return And([command_to_bool(bools, c) for c in commands])
+    print('final state constraint')
+    return And([command_to_bool(bools, c) for c in tqdm(commands)])
 
 
 def command_to_bool(bools: BoolGroup, command: Command) -> BoolRef:
@@ -149,7 +149,7 @@ def to_bools(repository: PackageGroup,
              time_range: Iterable[int]) -> BoolRepository:
     return [{
         reference: to_bool(reference, time_step) for reference in repository
-    } for time_step in time_range]
+    } for time_step in tqdm(time_range)]
 
 
 def to_bool(reference: PackageReference, time_step: int) -> Bool:

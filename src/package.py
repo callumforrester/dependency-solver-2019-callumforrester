@@ -4,6 +4,7 @@ import re
 from typing import List, Dict, Iterator, Iterable, Callable, Union
 from dataclasses import dataclass
 from enum import Enum
+from tqdm import tqdm
 
 from src.compare import VersionOperator, compare
 
@@ -56,7 +57,7 @@ class Package:
 
 def parse_repository(repository: List[Dict]) -> PackageGroup:
     rep = {}
-    for d in repository:
+    for d in tqdm(repository):
         identifier = parse_package_identifier(d)
         package = parse_package(d)
         name = identifier.name
