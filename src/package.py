@@ -117,6 +117,6 @@ def make_package_reference(name, version, operator) -> PackageReference:
                             if operator else VersionOperator.EQUAL)
 
 
-def load_dict(file_path: str) -> Iterator[Dict]:
+def load_json(file_path: str) -> Iterator[Dict]:
     with open(file_path, 'r') as handle:
         return json.load(handle)

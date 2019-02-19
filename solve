@@ -6,7 +6,7 @@ import z3
 from pprint import PrettyPrinter
 from typing import List
 
-from src.package import load_dict, parse_repository, parse_command_list, \
+from src.package import load_json, parse_repository, parse_command_list, \
                         parse_package_reference
 from src.encode import encode, to_bools, GUESS_STEPS
 from src.decode import decode
@@ -22,7 +22,7 @@ def main(argv: List[str]):
 
     # Parse repo
     print('PART 1 - PARSE')
-    raw_repo = load_dict(repository_path)
+    raw_repo = load_json(repository_path)
     print('Parsing Repository')
     unexpanded_packages = parse_repository(raw_repo)
     print('Expanding Repository')
@@ -31,12 +31,12 @@ def main(argv: List[str]):
 
     # Parse constraints
     print('Parsing Final State')
-    raw_constraints = load_dict(constraints_path)
+    raw_constraints = load_json(constraints_path)
     unexpanded_final_state_constraints = parse_command_list(raw_constraints)
     final_state_constraints = list(expand_commands(unexpanded_packages, unexpanded_final_state_constraints))
 
     print('Parsing Initial State')
-    raw_initial = load_dict(initial_state_path)
+    raw_initial = load_json(initial_state_path)
     initial_state = list(map(parse_package_reference, raw_initial))
 
     pprinter = PrettyPrinter(indent=2, depth=32)
