@@ -1,4 +1,7 @@
 #!/bin/bash
-add-apt-repository ppa:deadsnakes/ppa
 apt-get update
-apt-get install python3.7
+apt-get install -y software-properties-common
+add-apt-repository -y ppa:deadsnakes/ppa
+apt-get install -y python3.7
+
+pip install -r requirements.txt
