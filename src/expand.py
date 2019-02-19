@@ -4,29 +4,23 @@ from functools import partial, reduce
 from src.package import Package, Command, PackageReference, PackageGroup, Repository
 
 
-def expand_commands(repository: Iterable[Package],
+def expand_commands(repository: Repository,
                     commands: Iterable[Command]) -> Iterable[Command]:
     expand = partial(expand_command, repository)
     return map(expand, commands)
 
 
-def expand_command(repository: Iterable[Package], command: Command) -> Command:
+def expand_command(repository: Repository, command: Command) -> Command:
     command.reference = expand_reference(repository, command.reference)
     return command
 
 
-def expand_repository(repository: Repository) -> Repository:
-    return {
-        name: expand_package_group(repository, packages)
-        for name, packages in repository.items()
-    }
-
-
-def expand_package_group(repository: Repository, group: PackageGroup) -> PackageGroup:
-    return {
-        identifier: expand_package(repository, package)
-        for identifier, package in group.items()
-    }
+def expand_repository(repository: Repository) -> PackageGroup:
+    result = {}
+    for name, packages in repository.items():
+        for reference, package in packages.items():
+            result[reference] = expand_package(repository, package)
+    return result
 
 
 def expand_package(repository: Repository, package: Package) -> Package:

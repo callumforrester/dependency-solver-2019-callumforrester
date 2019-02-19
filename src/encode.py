@@ -2,61 +2,71 @@ import itertools
 
 from z3 import Optimize, And, Not, Or, Bool, Implies, If, Sum, BoolRef
 
-from typing import Iterable, TypeVar, Tuple, Dict, Set
+from typing import Iterable, TypeVar, Tuple, Dict, Set, List
 
-from src.package import Package, Command, CommandSort, PackageReference
+from src.package import Package, Command, CommandSort, PackageReference, PackageGroup
 from src.expand import expand_repository, expand_commands
 
 GUESS_STEPS = 10
 
 UNINSTALL_COST = 1000000
 
-BoolRepository = Dict[int, Dict[PackageReference, BoolRef]]
+BoolGroup = Dict[PackageReference, BoolRef]
+BoolRepository = List[BoolGroup]
 
 
 # TODO: Initial states
-def encode(bools: BoolRepository,
-           repository: Iterable[Package],
-           final_state_constraints: Iterable[Command],
+def encode(repository: PackageGroup,
            initial_state: Iterable[PackageReference],
-           time_range: Iterable[int]) -> Optimize:
+           final_state_constraints: Iterable[Command],
+           bools: BoolRepository) -> Optimize:
 
     s = Optimize()
 
-    repository = list(expand_repository(repository))
-    final_state_constraints = expand_commands(repository,
-                                              final_state_constraints)
+    formula = And(
+        constrain_repository(bools, repository),
+        constrain_commands(bools[-1], final_state_constraints),
+        constrain_initial_state(bools[0], set(initial_state)),
+        constrain_delta(bools)
+    )
 
-    # time_range = list(range(GUESS_STEPS))
-    # bools = to_bools(repository, time_range)
-
-    final_time = GUESS_STEPS - 1
-
-    for step in range(GUESS_STEPS):
-        formula = And(constrain_repository(bools, repository, step),
-                      constrain_commands(bools, final_state_constraints,
-                                         final_time),
-                      constrain_initial_state(bools, set(initial_state)),
-                      constrain_all_delta(bools, repository, time_range))
-        s.add(formula)
-
-    s.minimize(total_cost(bools, repository, time_range))
+    s.add(formula)
+    s.minimize(total_cost(bools, repository))
     return s
 
 
-def total_cost(bools: BoolRepository, repository: Iterable[Package],
-               time_steps: Iterable[int]) -> BoolRef:
+def total_cost(bools: BoolRepository, repository: PackageGroup) -> BoolRef:
     print('COST CONSTRAINT')
-    return Sum([cost(bools[f][p.identifier], bools[t][p.identifier], p.size, UNINSTALL_COST)
-                for p in repository
-                for f, t in neighbours(time_steps)])
+    costs = [cost(repository, from_state, to_state)
+             for from_state, to_state in neighbours(bools)]
+    return Sum(costs)
 
 
-def constrain_all_delta(bools: BoolRepository, repository: Iterable[Package],
-                        time_steps: Iterable[int]) -> BoolRef:
+def cost(repository, from_state, to_state):
+    return Sum([cst(repository, s)
+                for s in zip(from_state.items(), to_state.items())])
+
+
+def cst(repository, states):
+    from_state, to_state = states
+    from_package, from_bool = from_state
+    to_package, to_bool = to_state
+    uninstall_cost = UNINSTALL_COST
+    install_cost = repository[from_package].size
+    return If(And(Not(from_bool), to_bool), install_cost, If(And(from_bool, Not(to_bool)), uninstall_cost, 0))
+
+
+def constrain_delta(bools: BoolRepository) -> BoolRef:
     print('DELTA CONSTRAINT')
-    return And([constrain_delta(bools, repository, f, t)
-                for f, t in neighbours(time_steps)])
+    deltas = [delta(from_state, to_state) <= 1
+              for from_state, to_state in neighbours(bools)]
+    return And(deltas)
+
+
+def delta(from_state: BoolGroup, to_state: BoolGroup):
+    transition = zip(from_state.values(), to_state.values())
+    return Sum([If(from_bool == to_bool, 0, 1)
+                for from_bool, to_bool in transition])
 
 
 TNeighbour = TypeVar('TNeighbour')
@@ -67,61 +77,44 @@ def neighbours(it: Iterable[TNeighbour]) -> Iterable[
     return zip(it, itertools.islice(it, 1, None))
 
 
-def constrain_delta(bools: BoolRepository, repository: Iterable[Package],
-                    from_time: int, to_time: int) -> BoolRef:
-    return Sum([delta(bools[from_time][p.identifier],
-                      bools[to_time][p.identifier])
-                for p in repository]) <= 1
-
-
-def delta(b0: BoolRef, b1: BoolRef) -> BoolRef:
-    return If(b0 == b1, 0, 1)
-
-
-def cost(b0: BoolRef, b1: BoolRef, install_cost: int, uninstall_cost: int) -> BoolRef:
-    return If(And(Not(b0), b1), install_cost, If(And(b0, Not(b1)), uninstall_cost, 0))
-
-
-def constrain_initial_state(bools: BoolRepository,
+def constrain_initial_state(bools: BoolGroup,
                             initial_state: Set[PackageReference]) -> BoolRef:
-    initial_bools = bools[0]
-    return And([initial_bools[i] == (i in initial_state) for i, p in initial_bools.items()])
+    return And([p == (i in initial_state) for i, p in bools.items()])
 
 
-def constrain_repository(bools: BoolRepository, repository: Iterable[Package],
-                         at_time: int) -> BoolRef:
+def constrain_repository(bools: BoolRepository, repository: PackageGroup) -> BoolRef:
     print('RELATIONSHIPS CONSTRAINT')
-    return And([constrain_package(bools, p, at_time) for p in repository])
+    return And([constrain_package(b, i, p)
+                for b in bools for i, p in repository.items()])
 
 
-def constrain_package(bools: BoolRepository,
-                      package: Package, at_time: int) -> BoolRef:
-    installed = bools[at_time][package.identifier]
+def constrain_package(bools: BoolGroup,
+                      reference: PackageReference,
+                      package: Package) -> BoolRef:
+    installed = bools[reference]
 
     cst = []
     if package.dependencies:
-        req_deps = require_deps(bools, package.dependencies, at_time)
+        req_deps = require_deps(bools, package.dependencies)
         dependencies = Implies(installed, req_deps)
         cst.append(dependencies)
 
     if package.conflicts:
-        forbid_conflicts = forbid_all(bools, package.conflicts, at_time)
+        forbid_conflicts = forbid_all(bools, package.conflicts)
         conflicts = Implies(installed, forbid_conflicts)
         cst.append(conflicts)
 
     return And(cst)
 
 
-def constrain_commands(bools: BoolRepository,
-                       commands: Iterable[Command],
-                       final_time: int) -> BoolRef:
+def constrain_commands(bools: BoolGroup,
+                       commands: Iterable[Command]) -> BoolRef:
     print('FINAL STATE CONSTRAINT')
-    return And([command_to_bool(bools, c, final_time) for c in commands])
+    return And([command_to_bool(bools, c) for c in commands])
 
 
-def command_to_bool(bools: BoolRepository, command: Command,
-                    final_time: int) -> BoolRef:
-    req = require(bools, command.reference, final_time)
+def command_to_bool(bools: BoolGroup, command: Command) -> BoolRef:
+    req = next(find_bools(bools, command.reference))
     return {
         CommandSort.INSTALL: req,
         CommandSort.UNINSTALL: Not(req)
@@ -129,37 +122,35 @@ def command_to_bool(bools: BoolRepository, command: Command,
 
 
 def require_deps(bools: BoolRepository,
-                 deps: Iterable[Iterable[Constraint]],
-                 at_time: int) -> BoolRef:
-    return And([require_all_ors(bools, ds, at_time) for ds in deps])
+                 deps: Iterable[Iterable[PackageGroup]]) -> BoolRef:
+    return And([require_all_ors(bools, ds) for ds in deps])
 
 
 def forbid_all(bools: BoolRepository,
-               constraints: Iterable[Constraint], at_time: int) -> BoolRef:
-    return Not(require_all_ors(bools, constraints, at_time))
+               constraints: Iterable[PackageGroup]) -> BoolRef:
+    return Not(require_all_ors(bools, constraints))
 
 
-def require_all_ors(bools: BoolRepository,
-                    constraints: Iterable[Constraint],
-                    at_time: int) -> BoolRef:
-    return Or([require(bools, c, at_time) for c in constraints])
+def require_all_ors(bools: BoolGroup,
+                    constraints: Iterable[PackageGroup]) -> BoolRef:
+    return Or([require_or(bools, c) for c in constraints])
 
 
-def require(bools: Iterable[BoolRef],
-            constraint: Constraint, at_time: int) -> BoolRef:
-    return Or(list(find_bools(bools, constraint, at_time)))
+def require_or(bools: BoolGroup,
+               packages: PackageGroup) -> BoolRef:
+    return Or(list(find_bools(bools, packages)))
 
 
-def find_bools(bools: BoolRepository, constraint: Constraint,
-               at_time: int) -> Iterable[BoolRef]:
-    return map(lambda p: bools[at_time][p.identifier], constraint.packages)
+def find_bools(bools: BoolGroup, packages: PackageGroup) -> Iterable[BoolRef]:
+    return (bools[p] for p in packages)
 
 
-def to_bools(repository: Iterable[Package],
+def to_bools(repository: PackageGroup,
              time_range: Iterable[int]) -> BoolRepository:
-    return {t: {p.identifier: to_bool(p.identifier, t) for p in repository}
-            for t in time_range}
+    return [{
+        reference: to_bool(reference, time_step) for reference in repository
+    } for time_step in time_range]
 
 
-def to_bool(package_identifier: PackageIdentifier, time_step: int) -> Bool:
-    return Bool('%s_%i' % (package_identifier, time_step))
+def to_bool(reference: PackageReference, time_step: int) -> Bool:
+    return Bool('%s_%i' % (reference, time_step))

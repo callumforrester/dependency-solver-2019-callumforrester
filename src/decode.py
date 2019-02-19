@@ -1,20 +1,20 @@
 from z3 import ModelRef, BoolRef
 from typing import Iterable, Dict, Any
 
-from src.package import Command, CommandSort, Package, PackageIdentifier
-from src.encode import BoolRepository, neighbours
+from src.package import Command, CommandSort, Package, PackageGroup
+from src.encode import BoolRepository, neighbours, BoolGroup
 
 
 def decode(model: ModelRef, bools: BoolRepository,
-           repository: Iterable[Package], time_steps: Iterable[int]) -> Iterable[Command]:
-    sequence = filter(is_not_none,
-                      (to_command(model, bools[t0], bools[t1])
-                       for t0, t1 in neighbours(time_steps)))
-    return list(sequence)
+           repository: PackageGroup) -> Iterable[Command]:
+    all_commands = (to_command(model, from_state, to_state)
+                    for from_state, to_state in neighbours(bools))
+
+    return list(filter(is_not_none, all_commands))
 
 
-def to_command(model: ModelRef, before: Dict[PackageIdentifier, BoolRef],
-               after: Dict[PackageIdentifier, BoolRef]) -> Command:
+def to_command(model: ModelRef, before: BoolGroup,
+               after: BoolGroup) -> Command:
     # packages = set(before) - set(after)
     # print('%s -> %s' % (before, after))
 

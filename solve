@@ -10,7 +10,7 @@ from src.package import load_dict, parse_repository, parse_command_list, \
                         parse_package_reference
 from src.encode import encode, to_bools, GUESS_STEPS
 from src.decode import decode
-from src.expand import expand_reference
+from src.expand import expand_reference, expand_repository, expand_commands
 # from src.compare import flatten_repository, parse_constraints
 
 
@@ -23,22 +23,23 @@ def main(argv: List[str]):
     # Parse repo
     print('1. parse repo')
     raw_repo = load_dict(repository_path)
-    packages = list(parse_repository(raw_repo))
+    unexpanded_packages = parse_repository(raw_repo)
+    packages = expand_repository(unexpanded_packages)
     # packages = flatten_repository(packages)
 
     # Parse constraints
     print('2. parse final state')
     raw_constraints = load_dict(constraints_path)
-    final_state_constraints = parse_command_list(raw_constraints)
+    unexpanded_final_state_constraints = parse_command_list(raw_constraints)
+    final_state_constraints = list(expand_commands(unexpanded_packages, unexpanded_final_state_constraints))
 
     print('3. parse initial state')
     raw_initial = load_dict(initial_state_path)
     initial_state = list(map(lambda r: expand_reference(packages, r), map(parse_package_reference, raw_initial)))
 
-
-    pprinter = PrettyPrinter()
+    pprinter = PrettyPrinter(indent=2, depth=32)
     print('PACKAGES')
-    pprinter.pprint(list(packages))
+    pprinter.pprint(packages)
     print('=============')
     print('INITIAL STATE CONSTRAINTS')
     pprinter.pprint(initial_state)
@@ -48,19 +49,17 @@ def main(argv: List[str]):
     print('=============')
 
     print('MODEL')
-    time_range = list(range(GUESS_STEPS))
-    print('4. build package vars')
-    bools = to_bools(packages, time_range)
     print('5. encode')
-    problem = encode(bools, packages, final_state_constraints, initial_state, time_range)
+    bools = to_bools(packages, range(GUESS_STEPS))
+    problem = encode(packages, initial_state, final_state_constraints, bools)
     print('5. check')
     was_sat = problem.check()
     if was_sat == z3.sat:
         model = problem.model()
-        # print(model)
-        # print('COMMANDS')
+        print(model)
+        print('COMMANDS')
         print('5. decode')
-        commands = decode(model, bools, packages, time_range)
+        commands = decode(model, bools, packages)
         print(list(map(str, commands)))
         # print('=============')
     elif was_sat == z3.unknown:
