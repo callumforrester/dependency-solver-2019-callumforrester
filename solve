@@ -3,6 +3,7 @@
 import sys
 import z3
 import logging
+import json
 
 from typing import List
 
@@ -57,7 +58,7 @@ def main(argv: List[str]):
         logging.info('Decoding Model')
         commands = decode(model, bools, packages)
         commands_as_str = list(map(str, commands))
-        print(commands_as_str)
+        print(json.dumps(commands_as_str))
     elif was_sat == z3.unknown:
         print('Unknown')
     else:
