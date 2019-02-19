@@ -2,37 +2,35 @@ import json
 import re
 
 from typing import List, Dict, Iterator, Iterable, Callable, Union
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 
-from src.compare import compare
+from src.compare import VersionOperator, compare
 
 
 PACKAGE_REFERENCE_REGEX = '([.+a-zA-Z0-9-]+)(?:(>=|<=|=|<|>)(\d+(?:\.\d+)*))?'
 COMMAND_REGEX = '([+-])%s' % PACKAGE_REFERENCE_REGEX
 
-Constraint = Union['PackageGroup', 'PackageReference']
+# Constraint = Union['PackageGroup', 'PackageReference']
+PackageGroup = Dict['PackageReference', 'Package']
+Repository = Dict[str, PackageGroup]
+# Hmmm
 
 
 @dataclass(eq=True, frozen=True)
-class PackageIdentifier:
+class PackageReference:
     name: str
     version: str
+    operator: VersionOperator = VersionOperator.EQUAL
 
     def __str__(self) -> str:
-        return '%s=%s' % (self.name, self.version)
+        return '%s%s%s' % (self.name, self.operator.value, self.version)
 
-
-@dataclass
-class PackageReference:
-    identifier: PackageIdentifier
-    compare: Callable[[str, str], bool]
-
-
-@dataclass
-class PackageGroup:
-    identifier: PackageIdentifier
-    packages: Iterable['Package']
+    def compare(self, other: 'PackageReference') -> bool:
+        if self.version is None:
+            return True
+        else:
+            return compare(self.operator)(other.version, self.version)
 
 
 class CommandSort(Enum):
@@ -43,7 +41,7 @@ class CommandSort(Enum):
 @dataclass
 class Command:
     sort: CommandSort
-    reference: Constraint
+    reference: PackageReference
 
     def __str__(self) -> str:
         return '%s%s' % (self.sort.value, self.reference)
@@ -51,22 +49,35 @@ class Command:
 
 @dataclass
 class Package:
-    identifier: PackageIdentifier
     size: int
-    dependencies: List[List[Constraint]]
-    conflicts: List[Constraint]
+    dependencies: List[List[PackageReference]]
+    conflicts: List[PackageReference]
 
 
-def parse_repository(repository: List[Dict]) -> Iterable[Package]:
-    return map(parse_package, repository)
+def parse_repository(repository: List[Dict]) -> PackageGroup:
+    rep = {}
+    for d in repository:
+        identifier = parse_package_identifier(d)
+        package = parse_package(d)
+        name = identifier.name
+        if name not in rep:
+            rep[name] = {}
+        rep[name][identifier] = package
+    return rep
+
+
+def parse_package_identifier(d: Dict) -> PackageReference:
+    return PackageReference(
+        d['name'],
+        d['version']
+    )
 
 
 def parse_package(d: Dict) -> Package:
     return Package(
-        PackageIdentifier(d['name'], d['version']),
         d['size'],
-        parse_dependencies(d['depends']) if 'depends' in d else [],
-        parse_package_references(d['conflicts']) if 'conflicts' in d else []
+        list(parse_dependencies(d['depends']) if 'depends' in d else []),
+        list(parse_package_references(d['conflicts']) if 'conflicts' in d else [])
     )
 
 
@@ -81,11 +92,10 @@ def parse_package_references(references: List[str]) -> Iterable[
 
 
 def parse_package_reference(reference: str) -> PackageReference:
-        name, operator, version = re\
-                                    .compile(PACKAGE_REFERENCE_REGEX)\
-                                    .match(reference)\
-                                    .groups()
-        return make_package_reference(name, version, operator)
+    name, operator, version = re.compile(PACKAGE_REFERENCE_REGEX)\
+                                .match(reference)\
+                                .groups()
+    return make_package_reference(name, version, operator)
 
 
 def parse_command_list(commands: List[str]) -> Iterable[Command]:
@@ -96,13 +106,14 @@ def parse_command(command: str) -> Command:
     plus_minus, name, operator, version = re.compile(COMMAND_REGEX)\
                                             .match(command)\
                                             .groups()
-    return Command(CommandSort(plus_minus), make_package_reference(name, version, operator))
+    return Command(CommandSort(plus_minus),
+                   make_package_reference(name, version, operator))
 
 
 def make_package_reference(name, version, operator) -> PackageReference:
-            parsed_version = version or None
-            return PackageReference(PackageIdentifier(name, parsed_version),
-                                    compare(operator) if operator else None)
+    return PackageReference(name, version,
+                            VersionOperator(operator)
+                            if operator else VersionOperator.EQUAL)
 
 
 def load_dict(file_path: str) -> Iterator[Dict]:

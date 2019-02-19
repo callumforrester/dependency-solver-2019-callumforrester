@@ -1,7 +1,7 @@
 from typing import Iterable
-from functools import partial
+from functools import partial, reduce
 
-from src.package import Package, Command, PackageReference, PackageGroup
+from src.package import Package, Command, PackageReference, PackageGroup, Repository
 
 
 def expand_commands(repository: Iterable[Package],
@@ -15,23 +15,28 @@ def expand_command(repository: Iterable[Package], command: Command) -> Command:
     return command
 
 
-def expand_repository(repository: Iterable[Package]) -> Iterable[Package]:
-    expand = partial(expand_package, repository)
-    return map(expand, repository)
+def expand_repository(repository: Repository) -> Repository:
+    return {
+        name: expand_package_group(repository, packages)
+        for name, packages in repository.items()
+    }
 
 
-def expand_package(repository: Iterable[Package], package: Package) -> Package:
+def expand_package_group(repository: Repository, group: PackageGroup) -> PackageGroup:
+    return {
+        identifier: expand_package(repository, package)
+        for identifier, package in group.items()
+    }
+
+
+def expand_package(repository: Repository, package: Package) -> Package:
     expand = partial(expand_reference, repository)
-    package.dependencies = list(map(lambda d: list(map(expand, d)),
-                                    package.dependencies))
-    package.conflicts = list(map(expand, package.conflicts))
-    return package
+    return Package(package.size,
+                   list(map(lambda d: list(map(expand, d)), package.dependencies)),
+                   list(map(expand, package.conflicts)))
 
 
-def expand_reference(repository: Iterable[Package],
+def expand_reference(repository: Repository,
                      reference: PackageReference) -> PackageGroup:
-    p_group = list(filter(lambda p: p.identifier.name == reference.identifier.name
-                          and (reference.compare(p.identifier.version,
-                                                 reference.identifier.version)
-                          if reference.compare else True), repository))
-    return PackageGroup(reference.identifier, p_group)
+    candidates = repository[reference.name]
+    return list(filter(reference.compare, candidates))

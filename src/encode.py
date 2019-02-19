@@ -4,22 +4,21 @@ from z3 import Optimize, And, Not, Or, Bool, Implies, If, Sum, BoolRef
 
 from typing import Iterable, TypeVar, Tuple, Dict, Set
 
-from src.package import Package, Command, CommandSort, Constraint, \
-                        PackageIdentifier
+from src.package import Package, Command, CommandSort, PackageReference
 from src.expand import expand_repository, expand_commands
 
 GUESS_STEPS = 10
 
 UNINSTALL_COST = 1000000
 
-BoolRepository = Dict[int, Dict[PackageIdentifier, BoolRef]]
+BoolRepository = Dict[int, Dict[PackageReference, BoolRef]]
 
 
 # TODO: Initial states
 def encode(bools: BoolRepository,
            repository: Iterable[Package],
            final_state_constraints: Iterable[Command],
-           initial_state: Iterable[PackageIdentifier],
+           initial_state: Iterable[PackageReference],
            time_range: Iterable[int]) -> Optimize:
 
     s = Optimize()
@@ -84,7 +83,7 @@ def cost(b0: BoolRef, b1: BoolRef, install_cost: int, uninstall_cost: int) -> Bo
 
 
 def constrain_initial_state(bools: BoolRepository,
-                            initial_state: Set[PackageIdentifier]) -> BoolRef:
+                            initial_state: Set[PackageReference]) -> BoolRef:
     initial_bools = bools[0]
     return And([initial_bools[i] == (i in initial_state) for i, p in initial_bools.items()])
 
