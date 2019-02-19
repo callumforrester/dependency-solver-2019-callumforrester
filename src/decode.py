@@ -1,7 +1,7 @@
-from z3 import ModelRef, BoolRef
-from typing import Iterable, Dict, Any
+from z3 import ModelRef
+from typing import Iterable, Any
 
-from src.package import Command, CommandSort, Package, PackageGroup
+from src.package import Command, CommandSort, PackageGroup
 from src.encode import BoolRepository, neighbours, BoolGroup
 
 
@@ -15,13 +15,10 @@ def decode(model: ModelRef, bools: BoolRepository,
 
 def to_command(model: ModelRef, before: BoolGroup,
                after: BoolGroup) -> Command:
-    # packages = set(before) - set(after)
-    # print('%s -> %s' % (before, after))
-
     for p in before.keys():
         installed_before = bool(model.eval(before[p]))
         installed_after = bool(model.eval(after[p]))
-        # print('%s -> %s' % (installed_before, installed_after))
+
         if (not installed_before) and installed_after:
             return Command(CommandSort.INSTALL, p)
         elif installed_before and (not installed_after):
