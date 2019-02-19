@@ -32,5 +32,9 @@ def expand_package(repository: Repository, package: Package) -> Package:
 
 def expand_reference(repository: Repository,
                      reference: PackageReference) -> PackageGroup:
-    candidates = repository[reference.name]
-    return list(filter(reference.compare, candidates))
+    name = reference.name
+    if name in repository:
+        candidates = repository[reference.name]
+        return list(filter(reference.compare, candidates))
+    else:
+        return []
