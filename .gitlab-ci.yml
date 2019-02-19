@@ -1,0 +1,11 @@
+image: rgrig/ukc-co663-depsolver:latest
+
+stages:
+    - run-tests
+
+run-tests:
+    stage: run-tests
+    script:
+        - git clone https://github.com/ukc-co663/depsolver.git
+        - cd depsolver
+        - ./outside-test.sh callumforrester
