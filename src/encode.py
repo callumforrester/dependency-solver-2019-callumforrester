@@ -1,11 +1,12 @@
 import itertools
+import logging
 
 from tqdm import tqdm
 from z3 import Optimize, And, Not, Or, Bool, Implies, If, Sum, BoolRef
 from typing import Iterable, TypeVar, Tuple, Dict, Set, List
 
 from src.package import Package, Command, CommandSort, PackageReference, PackageGroup
-from src.expand import expand_repository, expand_commands
+
 
 GUESS_STEPS = 100
 
@@ -15,7 +16,6 @@ BoolGroup = Dict[PackageReference, BoolRef]
 BoolRepository = List[BoolGroup]
 
 
-# TODO: Initial states
 def encode(repository: PackageGroup,
            initial_state: Iterable[PackageReference],
            final_state_constraints: Iterable[Command],
@@ -36,9 +36,9 @@ def encode(repository: PackageGroup,
 
 
 def total_cost(bools: BoolRepository, repository: PackageGroup) -> BoolRef:
-    print('cost constraint')
+    logging.debug('cost constraint')
     costs = [cost(repository, from_state, to_state)
-             for from_state, to_state in tqdm(neighbours(bools))]
+             for from_state, to_state in tqdm(neighbours(bools), disable=in_debug())]
     return Sum(costs)
 
 
@@ -57,9 +57,9 @@ def cst(repository, states):
 
 
 def constrain_delta(bools: BoolRepository) -> BoolRef:
-    print('delta constraint')
+    logging.debug('delta constraint')
     deltas = [delta(from_state, to_state) <= 1
-              for from_state, to_state in tqdm(neighbours(bools))]
+              for from_state, to_state in tqdm(neighbours(bools), disable=in_debug())]
     return And(deltas)
 
 
@@ -83,9 +83,9 @@ def constrain_initial_state(bools: BoolGroup,
 
 
 def constrain_repository(bools: BoolRepository, repository: PackageGroup) -> BoolRef:
-    print('relationships constraint')
+    logging.debug('relationships constraint')
     return And([constrain_package(b, i, p)
-                for i, p in tqdm(repository.items()) for b in bools])
+                for i, p in tqdm(repository.items(), disable=in_debug()) for b in bools])
 
 
 def constrain_package(bools: BoolGroup,
@@ -109,8 +109,8 @@ def constrain_package(bools: BoolGroup,
 
 def constrain_commands(bools: BoolGroup,
                        commands: Iterable[Command]) -> BoolRef:
-    print('final state constraint')
-    return And([command_to_bool(bools, c) for c in tqdm(commands)])
+    logging.debug('final state constraint')
+    return And([command_to_bool(bools, c) for c in tqdm(commands, disable=in_debug())])
 
 
 def command_to_bool(bools: BoolGroup, command: Command) -> BoolRef:
@@ -149,8 +149,12 @@ def to_bools(repository: PackageGroup,
              time_range: Iterable[int]) -> BoolRepository:
     return [{
         reference: to_bool(reference, time_step) for reference in repository
-    } for time_step in tqdm(time_range)]
+    } for time_step in tqdm(time_range, disable=in_debug())]
 
 
 def to_bool(reference: PackageReference, time_step: int) -> Bool:
     return Bool('%s_%i' % (reference, time_step))
+
+
+def in_debug() -> bool:
+    return logging.getLogger().level >= logging.DEBUG

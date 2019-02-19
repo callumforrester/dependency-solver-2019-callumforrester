@@ -1,4 +1,3 @@
-from tqdm import tqdm
 from typing import Iterable
 from functools import partial, reduce
 
@@ -18,7 +17,7 @@ def expand_command(repository: Repository, command: Command) -> Command:
 
 def expand_repository(repository: Repository) -> PackageGroup:
     result = {}
-    for name, packages in tqdm(repository.items()):
+    for name, packages in repository.items():
         for reference, package in packages.items():
             result[reference] = expand_package(repository, package)
     return result

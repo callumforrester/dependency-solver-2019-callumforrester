@@ -2,74 +2,66 @@
 
 import sys
 import z3
+import logging
 
-from pprint import PrettyPrinter
 from typing import List
 
 from src.package import load_json, parse_repository, parse_command_list, \
                         parse_package_reference
 from src.encode import encode, to_bools, GUESS_STEPS
 from src.decode import decode
-from src.expand import expand_reference, expand_repository, expand_commands
-# from src.compare import flatten_repository, parse_constraints
+from src.expand import expand_repository, expand_commands
 
 
 def main(argv: List[str]):
+    logging.basicConfig(level=logging.ERROR,
+                        format='%(asctime)s, %(levelname)s: %(message)s')
     # Argparse
     repository_path = argv[1]
     initial_state_path = argv[2]
     constraints_path = argv[3]
 
     # Parse repo
-    print('PART 1 - PARSE')
+    logging.info('PART 1 - PARSE')
     raw_repo = load_json(repository_path)
-    print('Parsing Repository')
+    logging.info('Parsing Repository')
     unexpanded_packages = parse_repository(raw_repo)
-    print('Expanding Repository')
+    logging.debug('unexpanded_packages: %s', unexpanded_packages)
+    logging.info('Expanding Repository')
     packages = expand_repository(unexpanded_packages)
-    # packages = flatten_repository(packages)
+    logging.debug('expanded_packages: %s', packages)
 
     # Parse constraints
-    print('Parsing Final State')
+    logging.info('Parsing Final State')
     raw_constraints = load_json(constraints_path)
     unexpanded_final_state_constraints = parse_command_list(raw_constraints)
     final_state_constraints = list(expand_commands(unexpanded_packages, unexpanded_final_state_constraints))
+    logging.debug('final_state_constraints: %s', final_state_constraints)
 
-    print('Parsing Initial State')
+    logging.info('Parsing Initial State')
     raw_initial = load_json(initial_state_path)
     initial_state = list(map(parse_package_reference, raw_initial))
+    logging.debug('initial_state: %s', initial_state)
 
-    pprinter = PrettyPrinter(indent=2, depth=32)
-    # print('PACKAGES')
-    # pprinter.pprint(packages)
-    # print('=============')
-    # print('INITIAL STATE CONSTRAINTS')
-    # pprinter.pprint(initial_state)
-    # print('=============')
-    # print('FINAL STATE CONSTRAINTS')
-    # pprinter.pprint(final_state_constraints)
-    # print('=============')
-
-    print('PART 2 - ENCODE')
-    print('Creating Bool Matrix')
+    logging.info('PART 2 - ENCODE')
+    logging.info('Creating Bool Matrix')
     bools = to_bools(packages, range(GUESS_STEPS))
-    print('Encoding Problem')
+    logging.info('Encoding Problem')
     problem = encode(packages, initial_state, final_state_constraints, bools)
-    print('5. check')
+    logging.debug('SMTLib: %s', str(problem))
+    logging.info('Running Z3')
     was_sat = problem.check()
     if was_sat == z3.sat:
         model = problem.model()
-        # print(model)
-        print('COMMANDS')
-        print('5. decode')
+        logging.debug(model)
+        logging.info('Decoding Model')
         commands = decode(model, bools, packages)
-        print(list(map(str, commands)))
-        # print('=============')
+        commands_as_str = list(map(str, commands))
+        print(commands_as_str)
     elif was_sat == z3.unknown:
         print('Unknown')
     else:
         print('Impossible')
-    print('=============')
 
 
 if __name__ == '__main__':
