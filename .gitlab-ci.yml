@@ -8,4 +8,10 @@ run-tests:
     script:
         - git clone https://github.com/ukc-co663/depsolver.git
         - cd depsolver
-        - ./outside-test.sh callumforrester
+        - REPO="https://github.com/ukc-co663/dependency-solver-2019-callumforrester"
+        - mkdir temp-playground
+        - chmod -R +w temp-playground
+        - rm -rf temp-playground
+        - cp -r tests temp-playground
+        - chmod -R -w temp-playground
+        - ./tests/inside-test.sh $REPO
