@@ -13,13 +13,12 @@ GUESS_STEPS = 100
 UNINSTALL_COST = 1000000
 
 BoolGroup = Dict[PackageReference, BoolRef]
-BoolRepository = List[BoolGroup]
 
 
 def encode(repository: PackageGroup,
            initial_state: Iterable[PackageReference],
            final_state_constraints: Iterable[Command],
-           bools: BoolRepository) -> Optimize:
+           bools: List[BoolGroup]) -> Optimize:
 
     s = Optimize()
 
@@ -35,7 +34,7 @@ def encode(repository: PackageGroup,
     return s
 
 
-def total_cost(bools: BoolRepository, repository: PackageGroup) -> BoolRef:
+def total_cost(bools: List[BoolGroup], repository: PackageGroup) -> BoolRef:
     logging.debug('cost constraint')
     costs = [cost(repository, from_state, to_state)
              for from_state, to_state in tqdm(neighbours(bools), disable=in_debug())]
@@ -56,7 +55,7 @@ def cst(repository, states):
     return If(And(Not(from_bool), to_bool), install_cost, If(And(from_bool, Not(to_bool)), uninstall_cost, 0))
 
 
-def constrain_delta(bools: BoolRepository) -> BoolRef:
+def constrain_delta(bools: List[BoolGroup]) -> BoolRef:
     logging.debug('delta constraint')
     deltas = [delta(from_state, to_state) <= 1
               for from_state, to_state in tqdm(neighbours(bools), disable=in_debug())]
@@ -82,7 +81,7 @@ def constrain_initial_state(bools: BoolGroup,
     return And([p == (i in initial_state) for i, p in bools.items()])
 
 
-def constrain_repository(bools: BoolRepository, repository: PackageGroup) -> BoolRef:
+def constrain_repository(bools: List[BoolGroup], repository: PackageGroup) -> BoolRef:
     logging.debug('relationships constraint')
     return And([constrain_package(b, i, p)
                 for i, p in tqdm(repository.items(), disable=in_debug()) for b in bools])
@@ -121,12 +120,12 @@ def command_to_bool(bools: BoolGroup, command: Command) -> BoolRef:
     }[command.sort]
 
 
-def require_deps(bools: BoolRepository,
+def require_deps(bools: BoolGroup,
                  deps: Iterable[Iterable[PackageGroup]]) -> BoolRef:
     return And([require_all_ors(bools, ds) for ds in deps])
 
 
-def forbid_all(bools: BoolRepository,
+def forbid_all(bools: BoolGroup,
                constraints: Iterable[PackageGroup]) -> BoolRef:
     return Not(require_all_ors(bools, constraints))
 
@@ -146,7 +145,7 @@ def find_bools(bools: BoolGroup, packages: PackageGroup) -> Iterable[BoolRef]:
 
 
 def to_bools(repository: PackageGroup,
-             time_range: Iterable[int]) -> BoolRepository:
+             time_range: Iterable[int]) -> List[BoolGroup]:
     return [{
         reference: to_bool(reference, time_step) for reference in repository
     } for time_step in tqdm(time_range, disable=in_debug())]

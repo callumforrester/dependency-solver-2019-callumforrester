@@ -1,11 +1,11 @@
 from z3 import ModelRef
-from typing import Iterable, Any
+from typing import Iterable, Any, List
 
 from src.package import Command, CommandSort, PackageGroup
-from src.encode import BoolRepository, neighbours, BoolGroup
+from src.encode import neighbours, BoolGroup
 
 
-def decode(model: ModelRef, bools: BoolRepository,
+def decode(model: ModelRef, bools: List[BoolGroup],
            repository: PackageGroup) -> Iterable[Command]:
     all_commands = (to_command(model, from_state, to_state)
                     for from_state, to_state in neighbours(bools))
