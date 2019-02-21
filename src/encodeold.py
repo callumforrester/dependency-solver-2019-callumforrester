@@ -12,6 +12,8 @@ from src.encode.bools import BoolGroup
 from src.debug import in_debug
 from src.encode.delta import constrain_delta
 from src.encode.initial import constrain_initial_state
+from src.encode.relationships import constrain_repository
+from src.encode.install import find_bools
 
 
 GUESS_STEPS = 100
@@ -36,31 +38,6 @@ def encode(repository: PackageGroup,
     return s
 
 
-def constrain_repository(bools: List[BoolGroup], repository: PackageGroup) -> BoolRef:
-    logging.debug('relationships constraint')
-    return And([constrain_package(b, i, p)
-                for i, p in tqdm(repository.items(), disable=in_debug()) for b in bools])
-
-
-def constrain_package(bools: BoolGroup,
-                      reference: PackageReference,
-                      package: Package) -> BoolRef:
-    installed = bools[reference]
-
-    cst = []
-    if package.dependencies:
-        req_deps = require_deps(bools, package.dependencies)
-        dependencies = Implies(installed, req_deps)
-        cst.append(dependencies)
-
-    if package.conflicts:
-        forbid_conflicts = forbid_all(bools, package.conflicts)
-        conflicts = Implies(installed, forbid_conflicts)
-        cst.append(conflicts)
-
-    return And(cst)
-
-
 def constrain_commands(bools: BoolGroup,
                        commands: Iterable[Command]) -> BoolRef:
     logging.debug('final state constraint')
@@ -73,27 +50,3 @@ def command_to_bool(bools: BoolGroup, command: Command) -> BoolRef:
         CommandSort.INSTALL: req,
         CommandSort.UNINSTALL: Not(req)
     }[command.sort]
-
-
-def require_deps(bools: BoolGroup,
-                 deps: Iterable[Iterable[PackageGroup]]) -> BoolRef:
-    return And([require_all_ors(bools, ds) for ds in deps])
-
-
-def forbid_all(bools: BoolGroup,
-               constraints: Iterable[PackageGroup]) -> BoolRef:
-    return Not(require_all_ors(bools, constraints))
-
-
-def require_all_ors(bools: BoolGroup,
-                    constraints: Iterable[PackageGroup]) -> BoolRef:
-    return Or([require_or(bools, c) for c in constraints])
-
-
-def require_or(bools: BoolGroup,
-               packages: PackageGroup) -> BoolRef:
-    return Or(list(find_bools(bools, packages)))
-
-
-def find_bools(bools: BoolGroup, packages: PackageGroup) -> Iterable[BoolRef]:
-    return (bools[p] for p in packages)
