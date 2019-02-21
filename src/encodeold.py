@@ -6,13 +6,13 @@ from z3 import Optimize, And, Not, Or, Bool, Implies, If, Sum, BoolRef
 from typing import Iterable, TypeVar, Tuple, Dict, Set, List
 
 from src.package import Package, Command, CommandSort, PackageReference, PackageGroup
+from src.encode.cost import total_cost
+from src.neighbours import neighbours
+from src.encode.bools import BoolGroup
+from src.debug import in_debug
 
 
 GUESS_STEPS = 100
-
-UNINSTALL_COST = 1000000
-
-BoolGroup = Dict[PackageReference, BoolRef]
 
 
 def encode(repository: PackageGroup,
@@ -34,27 +34,6 @@ def encode(repository: PackageGroup,
     return s
 
 
-def total_cost(bools: List[BoolGroup], repository: PackageGroup) -> BoolRef:
-    logging.debug('cost constraint')
-    costs = [cost(repository, from_state, to_state)
-             for from_state, to_state in tqdm(neighbours(bools), disable=in_debug())]
-    return Sum(costs)
-
-
-def cost(repository, from_state, to_state):
-    return Sum([cst(repository, s)
-                for s in zip(from_state.items(), to_state.items())])
-
-
-def cst(repository, states):
-    from_state, to_state = states
-    from_package, from_bool = from_state
-    to_package, to_bool = to_state
-    uninstall_cost = UNINSTALL_COST
-    install_cost = repository[from_package].size
-    return If(And(Not(from_bool), to_bool), install_cost, If(And(from_bool, Not(to_bool)), uninstall_cost, 0))
-
-
 def constrain_delta(bools: List[BoolGroup]) -> BoolRef:
     logging.debug('delta constraint')
     deltas = [delta(from_state, to_state) <= 1
@@ -66,14 +45,6 @@ def delta(from_state: BoolGroup, to_state: BoolGroup):
     transition = zip(from_state.values(), to_state.values())
     return Sum([If(from_bool == to_bool, 0, 1)
                 for from_bool, to_bool in transition])
-
-
-TNeighbour = TypeVar('TNeighbour')
-
-
-def neighbours(it: Iterable[TNeighbour]) -> Iterable[
-                                            Tuple[TNeighbour, TNeighbour]]:
-    return zip(it, itertools.islice(it, 1, None))
 
 
 def constrain_initial_state(bools: BoolGroup,
@@ -142,18 +113,3 @@ def require_or(bools: BoolGroup,
 
 def find_bools(bools: BoolGroup, packages: PackageGroup) -> Iterable[BoolRef]:
     return (bools[p] for p in packages)
-
-
-def to_bools(repository: PackageGroup,
-             time_range: Iterable[int]) -> List[BoolGroup]:
-    return [{
-        reference: to_bool(reference, time_step) for reference in repository
-    } for time_step in tqdm(time_range, disable=in_debug())]
-
-
-def to_bool(reference: PackageReference, time_step: int) -> Bool:
-    return Bool('%s_%i' % (reference, time_step))
-
-
-def in_debug() -> bool:
-    return logging.getLogger().level >= logging.DEBUG

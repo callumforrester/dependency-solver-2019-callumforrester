@@ -9,7 +9,8 @@ from typing import List
 
 from src.package import load_json, parse_repository, parse_command_list, \
                         parse_package_reference
-from src.encode import encode, to_bools, GUESS_STEPS
+from src.encodeold import encode, GUESS_STEPS
+from src.encode.bools import to_bools
 from src.decode import decode
 from src.expand import expand_repository, expand_commands
 

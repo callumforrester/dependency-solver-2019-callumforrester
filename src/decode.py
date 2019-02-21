@@ -2,7 +2,8 @@ from z3 import ModelRef
 from typing import Iterable, Any, List
 
 from src.package import Command, CommandSort, PackageGroup
-from src.encode import neighbours, BoolGroup
+from src.neighbours import neighbours
+from src.encode.bools import BoolGroup
 
 
 def decode(model: ModelRef, bools: List[BoolGroup],
