@@ -6,11 +6,8 @@ from dataclasses import dataclass
 
 from solver.compare import VersionOperator, compare
 
-
-# Constraint = Union['PackageGroup', 'PackageReference']
 PackageGroup = Dict['PackageReference', 'Package']
 Repository = Dict[str, PackageGroup]
-# Hmmm
 
 
 @dataclass(eq=True, frozen=True)

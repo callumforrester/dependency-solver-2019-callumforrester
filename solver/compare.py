@@ -9,8 +9,6 @@ class VersionOperator(Enum):
     LESS_OR_EQUAL = '<='
     LESS = '<'
 
-# Deps format: [[A OR B] AND [C]]
-
 
 TComparable = TypeVar('TComparable')
 
