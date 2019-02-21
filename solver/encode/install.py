@@ -1,8 +1,8 @@
 from z3 import BoolRef, Not, Or, And
 from typing import List, Set
 
-from src.encode.state import EncodedState
-from src.package.package import PackageGroup, PackageReference
+from solver.encode.state import EncodedState
+from solver.package.package import PackageGroup, PackageReference
 
 
 def exact_installed(state: EncodedState,

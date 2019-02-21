@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from src.package.package import PackageReference
+from solver.package.package import PackageReference
 
 
 class CommandSort(Enum):

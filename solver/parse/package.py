@@ -1,7 +1,7 @@
 from typing import List, Dict
 
-from src.package.package import Package, PackageGroup
-from src.parse.reference import parse_package_identifier, parse_dependencies, \
+from solver.package.package import Package, PackageGroup
+from solver.parse.reference import parse_package_identifier, parse_dependencies, \
                                 parse_package_references
 
 

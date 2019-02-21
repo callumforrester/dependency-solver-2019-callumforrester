@@ -4,9 +4,9 @@ from z3 import BoolRef, And, Sum, If
 from typing import List
 from tqdm import tqdm
 
-from src.encode.state import EncodedState
-from src.neighbours import neighbours
-from src.debug import in_debug
+from solver.encode.state import EncodedState
+from solver.neighbours import neighbours
+from solver.debug import in_debug
 
 
 def constrain_delta(states: List[EncodedState]) -> BoolRef:

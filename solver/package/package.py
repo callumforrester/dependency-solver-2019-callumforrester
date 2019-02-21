@@ -4,7 +4,7 @@ import re
 from typing import List, Dict
 from dataclasses import dataclass
 
-from src.compare import VersionOperator, compare
+from solver.compare import VersionOperator, compare
 
 
 # Constraint = Union['PackageGroup', 'PackageReference']

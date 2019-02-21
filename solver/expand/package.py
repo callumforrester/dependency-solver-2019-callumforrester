@@ -1,7 +1,7 @@
 from functools import partial
 
-from src.package.package import Package, PackageReference, PackageGroup, Repository
-from src.flatten import flatten_as_list
+from solver.package.package import Package, PackageReference, PackageGroup, Repository
+from solver.flatten import flatten_as_list
 
 
 def expand_repository(repository: Repository) -> PackageGroup:

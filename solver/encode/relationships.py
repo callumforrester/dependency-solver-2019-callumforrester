@@ -4,10 +4,10 @@ from z3 import BoolRef, And, Implies
 from typing import List, Optional
 from tqdm import tqdm
 
-from src.encode.state import EncodedState
-from src.package.package import Package, PackageReference, PackageGroup
-from src.debug import in_debug
-from src.encode.install import none_installed, any_installed
+from solver.encode.state import EncodedState
+from solver.package.package import Package, PackageReference, PackageGroup
+from solver.debug import in_debug
+from solver.encode.install import none_installed, any_installed
 
 
 def all_states_valid(states: List[EncodedState],

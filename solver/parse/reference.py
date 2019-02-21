@@ -2,8 +2,8 @@ import re
 
 from typing import List, Iterable, Dict
 
-from src.package.package import PackageReference
-from src.compare import VersionOperator
+from solver.package.package import PackageReference
+from solver.compare import VersionOperator
 
 PACKAGE_REFERENCE_REGEX = '([.+a-zA-Z0-9-]+)(?:(>=|<=|=|<|>)(\d+(?:\.\d+)*))?'
 

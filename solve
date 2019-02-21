@@ -7,16 +7,16 @@ import json
 
 from typing import List
 
-from src.parse.package import parse_repository
-from src.parse.reference import parse_package_reference
-from src.parse.command import parse_command_list
-from src.parse.load import load_json
-from src.solver import solve
-from src.encode.encode import DependencyProblem
-from src.encode.state import generate_state_map
-from src.decode import decode
-from src.expand.package import expand_repository
-from src.expand.command import expand_commands
+from solver.parse.package import parse_repository
+from solver.parse.reference import parse_package_reference
+from solver.parse.command import parse_command_list
+from solver.parse.load import load_json
+from solver.solver import solve
+from solver.encode.encode import DependencyProblem
+from solver.encode.state import generate_state_map
+from solver.decode import decode
+from solver.expand.package import expand_repository
+from solver.expand.command import expand_commands
 
 
 def main(argv: List[str]):

@@ -2,14 +2,14 @@ from dataclasses import dataclass
 from z3 import Optimize, And, BoolRef
 from typing import Iterable, List
 
-from src.package.package import PackageReference, PackageGroup
-from src.package.command import Command
-from src.encode.cost import total_cost
-from src.encode.state import EncodedState
-from src.encode.delta import constrain_delta
-from src.encode.relationships import all_states_valid
-from src.encode.command import constrain_commands
-from src.encode.install import exact_installed
+from solver.package.package import PackageReference, PackageGroup
+from solver.package.command import Command
+from solver.encode.cost import total_cost
+from solver.encode.state import EncodedState
+from solver.encode.delta import constrain_delta
+from solver.encode.relationships import all_states_valid
+from solver.encode.command import constrain_commands
+from solver.encode.install import exact_installed
 
 
 @dataclass

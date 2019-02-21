@@ -4,10 +4,10 @@ from z3 import BoolRef, And, Not
 from typing import Iterable
 from tqdm import tqdm
 
-from src.encode.state import EncodedState
-from src.encode.install import get_state
-from src.package.command import Command, CommandSort
-from src.debug import in_debug
+from solver.encode.state import EncodedState
+from solver.encode.install import get_state
+from solver.package.command import Command, CommandSort
+from solver.debug import in_debug
 
 
 def constrain_commands(state: EncodedState,

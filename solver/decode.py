@@ -1,10 +1,10 @@
 from z3 import ModelRef
 from typing import Iterable, Any, List
 
-from src.package.package import PackageGroup
-from src.package.command import Command, CommandSort
-from src.neighbours import neighbours
-from src.encode.state import EncodedState
+from solver.package.package import PackageGroup
+from solver.package.command import Command, CommandSort
+from solver.neighbours import neighbours
+from solver.encode.state import EncodedState
 
 
 def decode(model: ModelRef, states: List[EncodedState]) -> Iterable[Command]:

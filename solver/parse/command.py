@@ -1,8 +1,8 @@
 import re
 from typing import List, Iterable
 
-from src.package.command import Command, CommandSort
-from src.parse.reference import parse_package_reference
+from solver.package.command import Command, CommandSort
+from solver.parse.reference import parse_package_reference
 
 COMMAND_REGEX = '([+-])(.*)'
 

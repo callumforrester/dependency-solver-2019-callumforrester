@@ -4,10 +4,10 @@ from z3 import BoolRef, Sum, If, And, Not
 from tqdm import tqdm
 from typing import List
 
-from src.encode.state import EncodedState
-from src.package.package import PackageGroup
-from src.neighbours import neighbours
-from src.debug import in_debug
+from solver.encode.state import EncodedState
+from solver.package.package import PackageGroup
+from solver.neighbours import neighbours
+from solver.debug import in_debug
 
 UNINSTALL_COST = 1000000
 

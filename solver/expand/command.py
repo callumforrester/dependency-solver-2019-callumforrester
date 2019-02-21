@@ -1,9 +1,9 @@
 from typing import Iterable
 from functools import partial
 
-from src.package.package import Repository
-from src.package.command import Command
-from src.expand.package import expand_reference
+from solver.package.package import Repository
+from solver.package.command import Command
+from solver.expand.package import expand_reference
 
 
 def expand_commands(repository: Repository,

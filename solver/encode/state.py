@@ -2,8 +2,8 @@ from z3 import BoolRef, Bool
 from typing import List, Iterable, Dict
 from tqdm import tqdm
 
-from src.package.package import PackageReference, PackageGroup
-from src.debug import in_debug
+from solver.package.package import PackageReference, PackageGroup
+from solver.debug import in_debug
 
 EncodedState = Dict[PackageReference, BoolRef]
 
