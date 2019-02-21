@@ -14,6 +14,7 @@ from src.encode.delta import constrain_delta
 from src.encode.initial import constrain_initial_state
 from src.encode.relationships import constrain_repository
 from src.encode.install import find_bools
+from src.encode.command import constrain_commands
 
 
 GUESS_STEPS = 100
@@ -36,17 +37,3 @@ def encode(repository: PackageGroup,
     s.add(formula)
     s.minimize(total_cost(bools, repository))
     return s
-
-
-def constrain_commands(bools: BoolGroup,
-                       commands: Iterable[Command]) -> BoolRef:
-    logging.debug('final state constraint')
-    return And([command_to_bool(bools, c) for c in tqdm(commands, disable=in_debug())])
-
-
-def command_to_bool(bools: BoolGroup, command: Command) -> BoolRef:
-    req = next(find_bools(bools, command.reference))
-    return {
-        CommandSort.INSTALL: req,
-        CommandSort.UNINSTALL: Not(req)
-    }[command.sort]
