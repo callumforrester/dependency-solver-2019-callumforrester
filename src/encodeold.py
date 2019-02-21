@@ -11,6 +11,7 @@ from src.neighbours import neighbours
 from src.encode.bools import BoolGroup
 from src.debug import in_debug
 from src.encode.delta import constrain_delta
+from src.encode.initial import constrain_initial_state
 
 
 GUESS_STEPS = 100
@@ -33,11 +34,6 @@ def encode(repository: PackageGroup,
     s.add(formula)
     s.minimize(total_cost(bools, repository))
     return s
-
-
-def constrain_initial_state(bools: BoolGroup,
-                            initial_state: Set[PackageReference]) -> BoolRef:
-    return And([p == (i in initial_state) for i, p in bools.items()])
 
 
 def constrain_repository(bools: List[BoolGroup], repository: PackageGroup) -> BoolRef:
