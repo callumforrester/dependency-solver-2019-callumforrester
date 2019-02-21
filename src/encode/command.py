@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 from src.encode.bools import BoolGroup
 from src.encode.install import find_bools
-from src.package import Command, CommandSort
+from src.package.package import Command, CommandSort
 from src.debug import in_debug
 
 

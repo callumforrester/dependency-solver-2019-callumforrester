@@ -1,7 +1,7 @@
 from z3 import ModelRef
 from typing import Iterable, Any, List
 
-from src.package import Command, CommandSort, PackageGroup
+from src.package.package import Command, CommandSort, PackageGroup
 from src.neighbours import neighbours
 from src.encode.bools import BoolGroup
 

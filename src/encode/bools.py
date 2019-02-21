@@ -2,7 +2,7 @@ from z3 import BoolRef, Bool
 from typing import List, Iterable, Dict
 from tqdm import tqdm
 
-from src.package import PackageReference, PackageGroup
+from src.package.package import PackageReference, PackageGroup
 from src.debug import in_debug
 
 BoolGroup = Dict[PackageReference, BoolRef]

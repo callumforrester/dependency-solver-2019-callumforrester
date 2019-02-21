@@ -2,7 +2,7 @@ from z3 import BoolRef, Not, Or
 from typing import Iterable
 
 from src.encode.bools import BoolGroup
-from src.package import PackageGroup
+from src.package.package import PackageGroup
 
 
 def forbid_all(bools: BoolGroup,

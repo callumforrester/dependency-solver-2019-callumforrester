@@ -2,7 +2,7 @@ from z3 import BoolRef, And
 from typing import Set
 
 from src.encode.bools import BoolGroup
-from src.package import PackageReference
+from src.package.package import PackageReference
 
 
 def constrain_initial_state(bools: BoolGroup,

@@ -5,7 +5,7 @@ from tqdm import tqdm
 from typing import List
 
 from src.encode.bools import BoolGroup
-from src.package import PackageGroup
+from src.package.package import PackageGroup
 from src.neighbours import neighbours
 from src.debug import in_debug
 

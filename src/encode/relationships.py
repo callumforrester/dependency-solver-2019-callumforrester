@@ -5,7 +5,7 @@ from typing import List, Iterable
 from tqdm import tqdm
 
 from src.encode.bools import BoolGroup
-from src.package import Package, PackageReference, PackageGroup
+from src.package.package import Package, PackageReference, PackageGroup
 from src.debug import in_debug
 from src.encode.install import forbid_all, require_all_ors
 
