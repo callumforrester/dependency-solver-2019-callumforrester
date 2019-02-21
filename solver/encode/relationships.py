@@ -2,11 +2,10 @@ import logging
 
 from z3 import BoolRef, And, Implies
 from typing import List, Optional
-from tqdm import tqdm
 
 from solver.encode.state import EncodedState
 from solver.package.package import Package, PackageReference, PackageGroup
-from solver.debug import in_debug
+from solver.debug import logging_tqdm
 from solver.encode.install import none_installed, any_installed
 
 
@@ -15,7 +14,7 @@ def all_states_valid(states: List[EncodedState],
     logging.debug('relationships constraint')
 
     constraints = [state_valid(b, i, p)
-                   for i, p in tqdm(repository.items(), disable=in_debug())
+                   for i, p in logging_tqdm(repository.items())
                    for b in states]
     return And(constraints)
 

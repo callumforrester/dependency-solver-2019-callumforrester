@@ -2,17 +2,16 @@ import logging
 
 from z3 import BoolRef, And, If, Sum
 from typing import List, Callable
-from tqdm import tqdm
 
 from solver.encode.state import EncodedState
 from solver.neighbours import neighbours
-from solver.debug import in_debug
+from solver.debug import logging_tqdm
 
 
 def at_most_one_change(states: List[EncodedState]) -> BoolRef:
     logging.debug('delta constraint')
     deltas = [number_of_changes(from_state, to_state) <= 1
-              for from_state, to_state in tqdm(neighbours(states), disable=in_debug())]
+              for from_state, to_state in logging_tqdm(neighbours(states))]
     return And(deltas)
 
 
