@@ -1,8 +1,14 @@
-from z3 import BoolRef, Not, Or
-from typing import List
+from z3 import BoolRef, Not, Or, And
+from typing import List, Set
 
 from src.encode.bools import BoolGroup
-from src.package.package import PackageGroup
+from src.package.package import PackageGroup, PackageReference
+
+
+def exact_installed(bools: BoolGroup,
+                    installed_packages: Set[PackageReference]) -> BoolRef:
+    return And([package_bool == (reference in installed_packages)
+                for reference, package_bool in bools.items()])
 
 
 def none_installed(bools: BoolGroup,

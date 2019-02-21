@@ -6,9 +6,9 @@ from src.package.command import Command
 from src.encode.cost import total_cost
 from src.encode.bools import BoolGroup
 from src.encode.delta import constrain_delta
-from src.encode.initial import constrain_initial_state
-from src.encode.relationships import constrain_repository
+from src.encode.relationships import all_states_valid
 from src.encode.command import constrain_commands
+from src.encode.install import exact_installed
 
 
 GUESS_STEPS = 100
@@ -22,9 +22,9 @@ def encode(repository: PackageGroup,
     s = Optimize()
 
     formula = And(
-        constrain_repository(bools, repository),
+        all_states_valid(bools, repository),
         constrain_commands(bools[-1], final_state_constraints),
-        constrain_initial_state(bools[0], set(initial_state)),
+        exact_installed(bools[0], set(initial_state)),
         constrain_delta(bools)
     )
 

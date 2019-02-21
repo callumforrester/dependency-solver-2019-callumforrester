@@ -10,19 +10,19 @@ from src.debug import in_debug
 from src.encode.install import none_installed, any_installed
 
 
-def constrain_repository(bools: List[BoolGroup],
-                         repository: PackageGroup) -> BoolRef:
+def all_states_valid(bools: List[BoolGroup],
+                     repository: PackageGroup) -> BoolRef:
     logging.debug('relationships constraint')
 
-    constraints = [installation_valid(b, i, p)
+    constraints = [state_valid(b, i, p)
                    for i, p in tqdm(repository.items(), disable=in_debug())
                    for b in bools]
     return And(constraints)
 
 
-def installation_valid(bools: BoolGroup,
-                       reference: PackageReference,
-                       package: Package) -> Optional[BoolRef]:
+def state_valid(bools: BoolGroup,
+                reference: PackageReference,
+                package: Package) -> Optional[BoolRef]:
     installed = bools[reference]
     return Implies(installed, relationships_satisfied(bools, package))
 
