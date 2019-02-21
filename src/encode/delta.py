@@ -9,10 +9,10 @@ from src.neighbours import neighbours
 from src.debug import in_debug
 
 
-def constrain_delta(state: List[EncodedState]) -> BoolRef:
+def constrain_delta(states: List[EncodedState]) -> BoolRef:
     logging.debug('delta constraint')
     deltas = [delta(from_state, to_state) <= 1
-              for from_state, to_state in tqdm(neighbours(state), disable=in_debug())]
+              for from_state, to_state in tqdm(neighbours(states), disable=in_debug())]
     return And(deltas)
 
 

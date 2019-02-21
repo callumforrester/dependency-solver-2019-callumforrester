@@ -10,13 +10,13 @@ from src.debug import in_debug
 from src.encode.install import none_installed, any_installed
 
 
-def all_states_valid(state: List[EncodedState],
+def all_states_valid(states: List[EncodedState],
                      repository: PackageGroup) -> BoolRef:
     logging.debug('relationships constraint')
 
     constraints = [state_valid(b, i, p)
                    for i, p in tqdm(repository.items(), disable=in_debug())
-                   for b in state]
+                   for b in states]
     return And(constraints)
 
 

@@ -7,10 +7,9 @@ from src.neighbours import neighbours
 from src.encode.state import EncodedState
 
 
-def decode(model: ModelRef, state: List[EncodedState],
-           repository: PackageGroup) -> Iterable[Command]:
+def decode(model: ModelRef, states: List[EncodedState]) -> Iterable[Command]:
     all_commands = (to_command(model, from_state, to_state)
-                    for from_state, to_state in neighbours(state))
+                    for from_state, to_state in neighbours(states))
 
     return list(filter(is_not_none, all_commands))
 

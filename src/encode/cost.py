@@ -12,10 +12,10 @@ from src.debug import in_debug
 UNINSTALL_COST = 1000000
 
 
-def total_cost(state: List[EncodedState], repository: PackageGroup) -> BoolRef:
+def total_cost(states: List[EncodedState], repository: PackageGroup) -> BoolRef:
     logging.debug('cost constraint')
     costs = [cost(repository, from_state, to_state)
-             for from_state, to_state in tqdm(neighbours(state), disable=in_debug())]
+             for from_state, to_state in tqdm(neighbours(states), disable=in_debug())]
     return Sum(costs)
 
 

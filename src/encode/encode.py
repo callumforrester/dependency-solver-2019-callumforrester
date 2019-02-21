@@ -1,4 +1,5 @@
-from z3 import Optimize, And
+from dataclasses import dataclass
+from z3 import Optimize, And, BoolRef
 from typing import Iterable, List
 
 from src.package.package import PackageReference, PackageGroup
@@ -11,23 +12,29 @@ from src.encode.command import constrain_commands
 from src.encode.install import exact_installed
 
 
-GUESS_STEPS = 100
+@dataclass
+class DependencyProblem:
+    repository: PackageGroup
+    initial_state: Iterable[PackageReference]
+    final_state_constraints: Iterable[Command]
 
 
-def encode(repository: PackageGroup,
-           initial_state: Iterable[PackageReference],
-           final_state_constraints: Iterable[Command],
-           state: List[EncodedState]) -> Optimize:
+def to_z3_problem(problem: DependencyProblem,
+                  states: List[EncodedState]) -> Optimize:
+    return minimize(problem, states, total_cost(states, problem.repository))
 
-    s = Optimize()
 
-    formula = And(
-        all_states_valid(state, repository),
-        constrain_commands(state[-1], final_state_constraints),
-        exact_installed(state[0], set(initial_state)),
-        constrain_delta(state)
-    )
+def minimize(problem: DependencyProblem, states: List[EncodedState],
+             to_minimize: BoolRef) -> Optimize:
+    minimizer = Optimize()
+    minimizer.add(to_formula(problem, states))
+    minimizer.minimize(to_minimize)
+    return minimizer
 
-    s.add(formula)
-    s.minimize(total_cost(state, repository))
-    return s
+
+def to_formula(problem: DependencyProblem,
+               states: List[EncodedState]) -> BoolRef:
+    return And(all_states_valid(states, problem.repository),
+               constrain_commands(states[-1], problem.final_state_constraints),
+               exact_installed(states[0], set(problem.initial_state)),
+               constrain_delta(states))

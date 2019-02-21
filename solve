@@ -11,7 +11,8 @@ from src.parse.package import parse_repository
 from src.parse.reference import parse_package_reference
 from src.parse.command import parse_command_list
 from src.parse.load import load_json
-from src.encode.encode import encode, GUESS_STEPS
+from src.solver import solve
+from src.encode.encode import DependencyProblem
 from src.encode.state import generate_state_map
 from src.decode import decode
 from src.expand.package import expand_repository
@@ -49,22 +50,12 @@ def main(argv: List[str]):
     logging.debug('initial_state: %s', initial_state)
 
     logging.info('PART 2 - ENCODE')
-    logging.info('Creating Bool Matrix')
-    bools = generate_state_map(packages, range(GUESS_STEPS))
-    logging.info('Encoding Problem')
-    problem = encode(packages, initial_state, final_state_constraints, bools)
-    logging.debug('SMTLib: %s', str(problem))
-    logging.info('Running Z3')
-    was_sat = problem.check()
-    if was_sat == z3.sat:
-        model = problem.model()
-        logging.debug(model)
-        logging.info('Decoding Model')
-        commands = decode(model, bools, packages)
-        commands_as_str = list(map(str, commands))
-        print(json.dumps(commands_as_str))
-    elif was_sat == z3.unknown:
-        print('Unknown')
+    problem = DependencyProblem(packages, initial_state,
+                                final_state_constraints)
+    solution = solve(problem)
+    if solution is not None:
+        commands = list(map(str, solution))
+        print(json.dumps(commands))
     else:
         print('Impossible')
 
