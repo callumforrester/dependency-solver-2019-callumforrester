@@ -1,7 +1,8 @@
 from typing import Iterable
 from functools import partial, reduce
 
-from src.package.package import Package, Command, PackageReference, PackageGroup, Repository
+from src.package.package import Package, PackageReference, PackageGroup, Repository
+from src.package.command import Command
 
 
 def expand_commands(repository: Repository,

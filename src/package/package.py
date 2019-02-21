@@ -9,7 +9,6 @@ from src.compare import VersionOperator, compare
 
 
 PACKAGE_REFERENCE_REGEX = '([.+a-zA-Z0-9-]+)(?:(>=|<=|=|<|>)(\d+(?:\.\d+)*))?'
-COMMAND_REGEX = '([+-])%s' % PACKAGE_REFERENCE_REGEX
 
 # Constraint = Union['PackageGroup', 'PackageReference']
 PackageGroup = Dict['PackageReference', 'Package']
@@ -31,20 +30,6 @@ class PackageReference:
             return True
         else:
             return compare(self.operator)(other.version, self.version)
-
-
-class CommandSort(Enum):
-    INSTALL = '+'
-    UNINSTALL = '-'
-
-
-@dataclass
-class Command:
-    sort: CommandSort
-    reference: PackageReference
-
-    def __str__(self) -> str:
-        return '%s%s' % (self.sort.value, self.reference)
 
 
 @dataclass
@@ -98,24 +83,7 @@ def parse_package_reference(reference: str) -> PackageReference:
     return make_package_reference(name, version, operator)
 
 
-def parse_command_list(commands: List[str]) -> Iterable[Command]:
-    return map(parse_command, commands)
-
-
-def parse_command(command: str) -> Command:
-    plus_minus, name, operator, version = re.compile(COMMAND_REGEX)\
-                                            .match(command)\
-                                            .groups()
-    return Command(CommandSort(plus_minus),
-                   make_package_reference(name, version, operator))
-
-
 def make_package_reference(name, version, operator) -> PackageReference:
     return PackageReference(name, version,
                             VersionOperator(operator)
                             if operator else VersionOperator.EQUAL)
-
-
-def load_json(file_path: str) -> Iterator[Dict]:
-    with open(file_path, 'r') as handle:
-        return json.load(handle)
