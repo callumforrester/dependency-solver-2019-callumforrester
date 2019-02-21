@@ -4,13 +4,13 @@ from z3 import BoolRef, And, Implies
 from typing import List, Optional
 from tqdm import tqdm
 
-from src.encode.bools import BoolGroup
+from src.encode.bools import EncodedState
 from src.package.package import Package, PackageReference, PackageGroup
 from src.debug import in_debug
 from src.encode.install import none_installed, any_installed
 
 
-def all_states_valid(bools: List[BoolGroup],
+def all_states_valid(bools: List[EncodedState],
                      repository: PackageGroup) -> BoolRef:
     logging.debug('relationships constraint')
 
@@ -20,23 +20,23 @@ def all_states_valid(bools: List[BoolGroup],
     return And(constraints)
 
 
-def state_valid(bools: BoolGroup,
+def state_valid(bools: EncodedState,
                 reference: PackageReference,
                 package: Package) -> Optional[BoolRef]:
     installed = bools[reference]
     return Implies(installed, relationships_satisfied(bools, package))
 
 
-def relationships_satisfied(bools: BoolGroup, package: Package) -> BoolRef:
+def relationships_satisfied(bools: EncodedState, package: Package) -> BoolRef:
     return And([dependencies_satisfied(bools, package)
                 if package.dependencies else True,
                 conflicts_not_installed(bools, package)
                 if package.conflicts else True])
 
 
-def dependencies_satisfied(bools: BoolGroup, package: Package) -> BoolRef:
+def dependencies_satisfied(bools: EncodedState, package: Package) -> BoolRef:
     return And([any_installed(bools, ds) for ds in package.dependencies])
 
 
-def conflicts_not_installed(bools: BoolGroup, package: Package) -> BoolRef:
+def conflicts_not_installed(bools: EncodedState, package: Package) -> BoolRef:
     return none_installed(bools, package.conflicts)

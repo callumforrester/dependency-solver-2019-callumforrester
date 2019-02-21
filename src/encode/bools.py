@@ -5,11 +5,11 @@ from tqdm import tqdm
 from src.package.package import PackageReference, PackageGroup
 from src.debug import in_debug
 
-BoolGroup = Dict[PackageReference, BoolRef]
+EncodedState = Dict[PackageReference, BoolRef]
 
 
 def to_bools(repository: PackageGroup,
-             time_range: Iterable[int]) -> List[BoolGroup]:
+             time_range: Iterable[int]) -> List[EncodedState]:
     return [{
         reference: to_bool(reference, time_step) for reference in repository
     } for time_step in tqdm(time_range, disable=in_debug())]

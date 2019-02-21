@@ -4,7 +4,7 @@ from typing import Iterable, List
 from src.package.package import PackageReference, PackageGroup
 from src.package.command import Command
 from src.encode.cost import total_cost
-from src.encode.bools import BoolGroup
+from src.encode.bools import EncodedState
 from src.encode.delta import constrain_delta
 from src.encode.relationships import all_states_valid
 from src.encode.command import constrain_commands
@@ -17,7 +17,7 @@ GUESS_STEPS = 100
 def encode(repository: PackageGroup,
            initial_state: Iterable[PackageReference],
            final_state_constraints: Iterable[Command],
-           bools: List[BoolGroup]) -> Optimize:
+           bools: List[EncodedState]) -> Optimize:
 
     s = Optimize()
 
