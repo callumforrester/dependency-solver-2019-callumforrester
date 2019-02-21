@@ -14,7 +14,8 @@ from src.parse.load import load_json
 from src.encode.encode import encode, GUESS_STEPS
 from src.encode.bools import to_bools
 from src.decode import decode
-from src.expand import expand_repository, expand_commands
+from src.expand.package import expand_repository
+from src.expand.command import expand_commands
 
 
 def main(argv: List[str]):
