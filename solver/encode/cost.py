@@ -7,6 +7,7 @@ from typing import List
 from solver.encode.state import EncodedState
 from solver.package.package import PackageGroup
 from solver.neighbours import neighbours
+from solver.flatten import flatten
 from solver.debug import in_debug
 
 UNINSTALL_COST = 1000000
@@ -19,7 +20,7 @@ def total_cost(states: List[EncodedState], repository: PackageGroup) -> BoolRef:
     return Sum(costs)
 
 
-def cost(repository, from_state, to_state):
+def cost(repository: PackageGroup, from_state: EncodedState, to_state: EncodedState) -> BoolRef:
     return Sum([cst(repository, s)
                 for s in zip(from_state.items(), to_state.items())])
 
