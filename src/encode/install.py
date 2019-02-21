@@ -7,12 +7,7 @@ from src.package.package import PackageGroup
 
 def none_installed(bools: BoolGroup,
                    constraints: List[PackageGroup]) -> BoolRef:
-    return Not(require_all_ors(bools, constraints))
-
-
-def require_all_ors(bools: BoolGroup,
-                    constraints: List[PackageGroup]) -> BoolRef:
-    return Or([any_installed(bools, c) for c in constraints])
+    return Not(any_installed(bools, constraints))
 
 
 def any_installed(bools: BoolGroup,

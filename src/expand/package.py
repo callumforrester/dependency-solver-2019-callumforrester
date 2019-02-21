@@ -1,6 +1,7 @@
 from functools import partial
 
 from src.package.package import Package, PackageReference, PackageGroup, Repository
+from src.flatten import flatten_as_list
 
 
 def expand_repository(repository: Repository) -> PackageGroup:
@@ -13,10 +14,10 @@ def expand_repository(repository: Repository) -> PackageGroup:
 
 def expand_package(repository: Repository, package: Package) -> Package:
     expand = partial(expand_reference, repository)
-    return Package(package.size,
-                   list(map(lambda d: list(map(expand, d)),
-                            package.dependencies)),
-                   list(map(expand, package.conflicts)))
+    expanded_dependencies = list(map(lambda d: flatten_as_list(map(expand, d)),
+                                     package.dependencies))
+    expanded_conflicts = flatten_as_list(map(expand, package.conflicts))
+    return Package(package.size, expanded_dependencies, expanded_conflicts)
 
 
 def expand_reference(repository: Repository,
@@ -24,6 +25,6 @@ def expand_reference(repository: Repository,
     name = reference.name
     if name in repository:
         candidates = repository[reference.name]
-        return list(filter(reference.compare, candidates))
+        return filter(reference.compare, candidates)
     else:
-        return []
+        return iter(())

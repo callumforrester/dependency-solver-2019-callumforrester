@@ -13,5 +13,5 @@ def expand_commands(repository: Repository,
 
 
 def expand_command(repository: Repository, command: Command) -> Command:
-    command.reference = expand_reference(repository, command.reference)
+    command.reference = list(expand_reference(repository, command.reference))
     return command

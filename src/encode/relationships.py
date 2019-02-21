@@ -7,7 +7,7 @@ from tqdm import tqdm
 from src.encode.bools import BoolGroup
 from src.package.package import Package, PackageReference, PackageGroup
 from src.debug import in_debug
-from src.encode.install import none_installed, require_all_ors
+from src.encode.install import none_installed, any_installed
 
 
 def constrain_repository(bools: List[BoolGroup], repository: PackageGroup) -> BoolRef:
@@ -37,4 +37,4 @@ def constrain_package(bools: BoolGroup,
 
 def require_deps(bools: BoolGroup,
                  deps: Iterable[Iterable[PackageGroup]]) -> BoolRef:
-    return And([require_all_ors(bools, ds) for ds in deps])
+    return And([any_installed(bools, ds) for ds in deps])
