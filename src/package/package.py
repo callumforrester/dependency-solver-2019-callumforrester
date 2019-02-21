@@ -1,9 +1,8 @@
 import json
 import re
 
-from typing import List, Dict, Iterator, Iterable, Callable, Union
+from typing import List, Dict
 from dataclasses import dataclass
-from enum import Enum
 
 from src.compare import VersionOperator, compare
 
