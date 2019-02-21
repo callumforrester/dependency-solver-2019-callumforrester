@@ -1,26 +1,18 @@
 #!./venv/bin/python
 
 import sys
-import z3
 import logging
 import json
 
 from typing import List
 
-from solver.parse.package import parse_repository
-from solver.parse.reference import parse_package_reference
-from solver.parse.command import parse_command_list
+from solver.parse.problem import parse_problem
 from solver.parse.load import load_json
 from solver.solver import solve
-from solver.encode.encode import DependencyProblem
-from solver.encode.state import generate_state_map
-from solver.decode import decode
-from solver.expand.package import expand_repository
-from solver.expand.command import expand_commands
 
 
 def main(argv: List[str]):
-    logging.basicConfig(level=logging.INFO,
+    logging.basicConfig(level=logging.ERROR,
                         format='%(asctime)s, %(levelname)s: %(message)s')
     # Argparse
     repository_path = argv[1]
@@ -28,30 +20,9 @@ def main(argv: List[str]):
     constraints_path = argv[3]
 
     # Parse repo
-    logging.info('PART 1 - PARSE')
-    raw_repo = load_json(repository_path)
-    logging.info('Parsing Repository')
-    unexpanded_packages = parse_repository(raw_repo)
-    logging.debug('unexpanded_packages: %s', unexpanded_packages)
-    logging.info('Expanding Repository')
-    packages = expand_repository(unexpanded_packages)
-    logging.debug('expanded_packages: %s', packages)
-
-    # Parse constraints
-    logging.info('Parsing Final State')
-    raw_constraints = load_json(constraints_path)
-    unexpanded_final_state_constraints = parse_command_list(raw_constraints)
-    final_state_constraints = list(expand_commands(unexpanded_packages, unexpanded_final_state_constraints))
-    logging.debug('final_state_constraints: %s', final_state_constraints)
-
-    logging.info('Parsing Initial State')
-    raw_initial = load_json(initial_state_path)
-    initial_state = list(map(parse_package_reference, raw_initial))
-    logging.debug('initial_state: %s', initial_state)
-
-    logging.info('PART 2 - ENCODE')
-    problem = DependencyProblem(packages, initial_state,
-                                final_state_constraints)
+    problem = parse_problem(load_json(repository_path),
+                            load_json(initial_state_path),
+                            load_json(constraints_path))
     solution = solve(problem)
     if solution is not None:
         commands = list(map(str, solution))
