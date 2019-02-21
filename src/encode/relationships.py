@@ -1,7 +1,7 @@
 import logging
 
 from z3 import BoolRef, And, Implies
-from typing import List, Iterable
+from typing import List, Optional
 from tqdm import tqdm
 
 from src.encode.bools import BoolGroup
@@ -10,31 +10,33 @@ from src.debug import in_debug
 from src.encode.install import none_installed, any_installed
 
 
-def constrain_repository(bools: List[BoolGroup], repository: PackageGroup) -> BoolRef:
+def constrain_repository(bools: List[BoolGroup],
+                         repository: PackageGroup) -> BoolRef:
     logging.debug('relationships constraint')
-    return And([constrain_package(b, i, p)
-                for i, p in tqdm(repository.items(), disable=in_debug()) for b in bools])
+
+    constraints = [installation_valid(b, i, p)
+                   for i, p in tqdm(repository.items(), disable=in_debug())
+                   for b in bools]
+    return And(constraints)
 
 
-def constrain_package(bools: BoolGroup,
-                      reference: PackageReference,
-                      package: Package) -> BoolRef:
+def installation_valid(bools: BoolGroup,
+                       reference: PackageReference,
+                       package: Package) -> Optional[BoolRef]:
     installed = bools[reference]
-
-    cst = []
-    if package.dependencies:
-        req_deps = require_deps(bools, package.dependencies)
-        dependencies = Implies(installed, req_deps)
-        cst.append(dependencies)
-
-    if package.conflicts:
-        forbid_conflicts = none_installed(bools, package.conflicts)
-        conflicts = Implies(installed, forbid_conflicts)
-        cst.append(conflicts)
-
-    return And(cst)
+    return Implies(installed, relationships_satisfied(bools, package))
 
 
-def require_deps(bools: BoolGroup,
-                 deps: Iterable[Iterable[PackageGroup]]) -> BoolRef:
-    return And([any_installed(bools, ds) for ds in deps])
+def relationships_satisfied(bools: BoolGroup, package: Package) -> BoolRef:
+    return And([dependencies_satisfied(bools, package)
+                if package.dependencies else True,
+                conflicts_not_installed(bools, package)
+                if package.conflicts else True])
+
+
+def dependencies_satisfied(bools: BoolGroup, package: Package) -> BoolRef:
+    return And([any_installed(bools, ds) for ds in package.dependencies])
+
+
+def conflicts_not_installed(bools: BoolGroup, package: Package) -> BoolRef:
+    return none_installed(bools, package.conflicts)
