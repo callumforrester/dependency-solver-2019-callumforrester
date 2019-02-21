@@ -1,11 +1,10 @@
 import logging
 
-from z3 import BoolRef, And, If
-from typing import List
+from z3 import BoolRef, And, If, Sum
+from typing import List, Callable
 from tqdm import tqdm
 
 from solver.encode.state import EncodedState
-from solver.encode.between import sum_between_states
 from solver.neighbours import neighbours
 from solver.debug import in_debug
 
@@ -24,3 +23,10 @@ def number_of_changes(from_state: EncodedState,
 
 def change(from_bool: BoolRef, to_bool: BoolRef) -> BoolRef:
     return If(from_bool == to_bool, 0, 1)
+
+
+def sum_between_states(func: Callable[[BoolRef, BoolRef], BoolRef],
+                       from_state: EncodedState,
+                       to_state: EncodedState) -> BoolRef:
+    transition = zip(from_state.values(), to_state.values())
+    return Sum([func(from_bool, to_bool) for from_bool, to_bool in transition])

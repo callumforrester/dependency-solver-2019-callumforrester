@@ -21,14 +21,11 @@ def total_cost(states: List[EncodedState], repository: PackageGroup) -> BoolRef:
 
 
 def cost(repository: PackageGroup, from_state: EncodedState, to_state: EncodedState) -> BoolRef:
-    return Sum([cst(repository, s)
-                for s in zip(from_state.items(), to_state.items())])
+    transition = map(flatten, zip(from_state.items(), to_state.items()))
+    return Sum([__cost(from_bool, to_bool, repository[from_package].size)
+                for from_package, from_bool, _, to_bool in transition])
 
 
-def cst(repository, states):
-    from_state, to_state = states
-    from_package, from_bool = from_state
-    to_package, to_bool = to_state
-    uninstall_cost = UNINSTALL_COST
-    install_cost = repository[from_package].size
-    return If(And(Not(from_bool), to_bool), install_cost, If(And(from_bool, Not(to_bool)), uninstall_cost, 0))
+def __cost(from_bool: BoolRef, to_bool: BoolRef, install_cost: int) -> BoolRef:
+    return If(And(Not(from_bool), to_bool), install_cost,
+              If(And(from_bool, Not(to_bool)), UNINSTALL_COST, 0))
