@@ -2,7 +2,7 @@ import re
 from typing import List, Iterable
 
 from src.package.command import Command, CommandSort
-from src.package.package import parse_package_reference
+from src.parse.reference import parse_package_reference
 
 COMMAND_REGEX = '([+-])(.*)'
 

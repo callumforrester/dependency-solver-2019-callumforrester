@@ -7,8 +7,8 @@ import json
 
 from typing import List
 
-from src.package.package import parse_repository, \
-                        parse_package_reference
+from src.parse.package import parse_repository
+from src.parse.reference import parse_package_reference
 from src.parse.command import parse_command_list
 from src.parse.load import load_json
 from src.encode.encode import encode, GUESS_STEPS
