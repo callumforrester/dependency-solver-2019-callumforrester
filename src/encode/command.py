@@ -5,7 +5,7 @@ from typing import Iterable
 from tqdm import tqdm
 
 from src.encode.bools import BoolGroup
-from src.encode.install import find_bools
+from src.encode.install import get_bools
 from src.package.command import Command, CommandSort
 from src.debug import in_debug
 
@@ -17,7 +17,7 @@ def constrain_commands(bools: BoolGroup,
 
 
 def command_to_bool(bools: BoolGroup, command: Command) -> BoolRef:
-    req = next(find_bools(bools, command.reference))
+    req = get_bools(bools, command.reference)[0]
     return {
         CommandSort.INSTALL: req,
         CommandSort.UNINSTALL: Not(req)

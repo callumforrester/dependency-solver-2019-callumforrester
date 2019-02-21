@@ -7,7 +7,7 @@ from tqdm import tqdm
 from src.encode.bools import BoolGroup
 from src.package.package import Package, PackageReference, PackageGroup
 from src.debug import in_debug
-from src.encode.install import forbid_all, require_all_ors
+from src.encode.install import none_installed, require_all_ors
 
 
 def constrain_repository(bools: List[BoolGroup], repository: PackageGroup) -> BoolRef:
@@ -28,7 +28,7 @@ def constrain_package(bools: BoolGroup,
         cst.append(dependencies)
 
     if package.conflicts:
-        forbid_conflicts = forbid_all(bools, package.conflicts)
+        forbid_conflicts = none_installed(bools, package.conflicts)
         conflicts = Implies(installed, forbid_conflicts)
         cst.append(conflicts)
 

@@ -1,20 +1,13 @@
-import itertools
-import logging
+from z3 import Optimize, And
+from typing import Iterable, List
 
-from tqdm import tqdm
-from z3 import Optimize, And, Not, Or, Bool, Implies, If, Sum, BoolRef
-from typing import Iterable, TypeVar, Tuple, Dict, Set, List
-
-from src.package.package import Package, PackageReference, PackageGroup
-from src.package.command import Command, CommandSort
+from src.package.package import PackageReference, PackageGroup
+from src.package.command import Command
 from src.encode.cost import total_cost
-from src.neighbours import neighbours
 from src.encode.bools import BoolGroup
-from src.debug import in_debug
 from src.encode.delta import constrain_delta
 from src.encode.initial import constrain_initial_state
 from src.encode.relationships import constrain_repository
-from src.encode.install import find_bools
 from src.encode.command import constrain_commands
 
 
