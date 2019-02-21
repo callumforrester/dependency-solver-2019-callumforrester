@@ -4,7 +4,7 @@ from z3 import BoolRef, Sum, If, And, Not
 from tqdm import tqdm
 from typing import List
 
-from src.encode.bools import EncodedState
+from src.encode.state import EncodedState
 from src.package.package import PackageGroup
 from src.neighbours import neighbours
 from src.debug import in_debug
@@ -12,10 +12,10 @@ from src.debug import in_debug
 UNINSTALL_COST = 1000000
 
 
-def total_cost(bools: List[EncodedState], repository: PackageGroup) -> BoolRef:
+def total_cost(state: List[EncodedState], repository: PackageGroup) -> BoolRef:
     logging.debug('cost constraint')
     costs = [cost(repository, from_state, to_state)
-             for from_state, to_state in tqdm(neighbours(bools), disable=in_debug())]
+             for from_state, to_state in tqdm(neighbours(state), disable=in_debug())]
     return Sum(costs)
 
 

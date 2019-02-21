@@ -4,13 +4,13 @@ from typing import Iterable, Any, List
 from src.package.package import PackageGroup
 from src.package.command import Command, CommandSort
 from src.neighbours import neighbours
-from src.encode.bools import EncodedState
+from src.encode.state import EncodedState
 
 
-def decode(model: ModelRef, bools: List[EncodedState],
+def decode(model: ModelRef, state: List[EncodedState],
            repository: PackageGroup) -> Iterable[Command]:
     all_commands = (to_command(model, from_state, to_state)
-                    for from_state, to_state in neighbours(bools))
+                    for from_state, to_state in neighbours(state))
 
     return list(filter(is_not_none, all_commands))
 

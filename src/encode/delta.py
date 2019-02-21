@@ -4,15 +4,15 @@ from z3 import BoolRef, And, Sum, If
 from typing import List
 from tqdm import tqdm
 
-from src.encode.bools import EncodedState
+from src.encode.state import EncodedState
 from src.neighbours import neighbours
 from src.debug import in_debug
 
 
-def constrain_delta(bools: List[EncodedState]) -> BoolRef:
+def constrain_delta(state: List[EncodedState]) -> BoolRef:
     logging.debug('delta constraint')
     deltas = [delta(from_state, to_state) <= 1
-              for from_state, to_state in tqdm(neighbours(bools), disable=in_debug())]
+              for from_state, to_state in tqdm(neighbours(state), disable=in_debug())]
     return And(deltas)
 
 

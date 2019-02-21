@@ -12,7 +12,7 @@ from src.parse.reference import parse_package_reference
 from src.parse.command import parse_command_list
 from src.parse.load import load_json
 from src.encode.encode import encode, GUESS_STEPS
-from src.encode.bools import to_bools
+from src.encode.state import generate_state_map
 from src.decode import decode
 from src.expand.package import expand_repository
 from src.expand.command import expand_commands
@@ -50,7 +50,7 @@ def main(argv: List[str]):
 
     logging.info('PART 2 - ENCODE')
     logging.info('Creating Bool Matrix')
-    bools = to_bools(packages, range(GUESS_STEPS))
+    bools = generate_state_map(packages, range(GUESS_STEPS))
     logging.info('Encoding Problem')
     problem = encode(packages, initial_state, final_state_constraints, bools)
     logging.debug('SMTLib: %s', str(problem))
