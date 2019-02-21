@@ -6,7 +6,7 @@ from solver.package.package import PackageReference, PackageGroup
 from solver.package.command import Command
 from solver.encode.cost import total_cost
 from solver.encode.state import EncodedState
-from solver.encode.delta import constrain_delta
+from solver.encode.delta import at_most_one_change
 from solver.encode.relationships import all_states_valid
 from solver.encode.command import all_commands_obeyed
 from solver.encode.install import exact_installed
@@ -35,6 +35,7 @@ def minimize(problem: DependencyProblem, states: List[EncodedState],
 def to_formula(problem: DependencyProblem,
                states: List[EncodedState]) -> BoolRef:
     return And(all_states_valid(states, problem.repository),
-               all_commands_obeyed(states[-1], problem.final_state_constraints),
+               all_commands_obeyed(states[-1],
+                                   problem.final_state_constraints),
                exact_installed(states[0], set(problem.initial_state)),
-               constrain_delta(states))
+               at_most_one_change(states))
