@@ -1,6 +1,6 @@
 import logging
 
-from z3 import BoolRef, And, Not
+from z3 import BoolRef, And, Not, Or
 from typing import Iterable
 
 from solver.encode.state import EncodedState
@@ -17,7 +17,7 @@ def all_commands_obeyed(state: EncodedState,
 
 
 def commands_obeyed(state: EncodedState, command: Command) -> BoolRef:
-    req = get_state(state, command.reference)[0]
+    req = Or(get_state(state, command.reference))
     return {
         CommandSort.INSTALL: req,
         CommandSort.UNINSTALL: Not(req)
