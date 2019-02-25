@@ -11,7 +11,7 @@ from solver.encode.install import none_installed, any_installed
 
 def all_states_valid(states: List[EncodedState],
                      repository: PackageGroup) -> BoolRef:
-    logging.debug('relationships constraint')
+    logging.info('relationships constraint')
 
     constraints = [state_valid(b, i, p)
                    for i, p in logging_tqdm(repository.items())

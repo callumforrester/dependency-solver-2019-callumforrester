@@ -11,7 +11,7 @@ from solver.debug import logging_tqdm
 
 def all_commands_obeyed(state: EncodedState,
                         commands: Iterable[Command]) -> BoolRef:
-    logging.debug('final state constraint')
+    logging.info('final state constraint')
     return And([commands_obeyed(state, c)
                 for c in logging_tqdm(commands)])
 

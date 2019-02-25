@@ -9,7 +9,7 @@ from solver.debug import logging_tqdm
 
 
 def at_most_one_change(states: List[EncodedState]) -> BoolRef:
-    logging.debug('delta constraint')
+    logging.info('delta constraint')
     deltas = [number_of_changes(from_state, to_state) <= 1
               for from_state, to_state in logging_tqdm(neighbours(states))]
     return And(deltas)
