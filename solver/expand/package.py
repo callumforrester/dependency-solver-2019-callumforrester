@@ -24,8 +24,8 @@ def expand_package(repository: Repository, package: Package) -> Package:
 def expand_dependencies(repository: Repository,
                         dependencies: List[List[PackageReference]]) -> List[List[PackageGroup]]:
     expand = partial(expand_reference, repository)
-    return list(filter(bool, map(lambda d: flatten_as_list(map(expand, d)),
-                                                           dependencies)))
+    return list(map(lambda d: flatten_as_list(map(expand, d)),
+                                                           dependencies))
 
 
 def expand_reference(repository: Repository,
