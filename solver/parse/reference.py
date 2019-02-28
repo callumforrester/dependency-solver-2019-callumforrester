@@ -1,18 +1,15 @@
 import re
 
-from typing import List, Iterable, Dict
+from typing import List, Iterable, Dict, Optional
 
-from solver.package.package import PackageReference
+from solver.package.package import PackageReference, Version
 from solver.compare import VersionOperator
 
 PACKAGE_REFERENCE_REGEX = '([.+a-zA-Z0-9-]+)(?:(>=|<=|=|<|>)(\d+(?:\.\d+)*))?'
 
 
 def parse_package_identifier(d: Dict) -> PackageReference:
-    return PackageReference(
-        d['name'],
-        d['version']
-    )
+    return make_package_reference(d['name'], d['version'])
 
 
 def parse_dependencies(dependencies: List[List[str]]) -> Iterable[Iterable[
@@ -32,7 +29,14 @@ def parse_package_reference(reference: str) -> PackageReference:
     return make_package_reference(name, version, operator)
 
 
-def make_package_reference(name, version, operator) -> PackageReference:
-    return PackageReference(name, version,
+def make_package_reference(name: str, version: str,
+                           operator: str = None) -> PackageReference:
+    return PackageReference(name, parse_version(version),
                             VersionOperator(operator)
                             if operator else VersionOperator.EQUAL)
+
+def parse_version(version: Optional[str]) -> Optional[Version]:
+    if version is None:
+        return version
+    else:
+        return tuple(map(int, version.split('.')))
