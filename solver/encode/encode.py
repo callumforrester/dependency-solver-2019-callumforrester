@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from z3 import Optimize, And, BoolRef
+from z3 import Optimize, And, BoolRef, Int
 from typing import Iterable, List
 
 from solver.package.package import PackageReference, PackageGroup
@@ -21,14 +21,14 @@ class DependencyProblem:
 
 def to_z3_problem(problem: DependencyProblem,
                   states: List[EncodedState]) -> Optimize:
-    return minimize(problem, states, total_cost(states, problem.repository))
-
-
-def minimize(problem: DependencyProblem, states: List[EncodedState],
-             to_minimize: BoolRef) -> Optimize:
     minimizer = Optimize()
     minimizer.add(to_formula(problem, states))
-    minimizer.minimize(to_minimize)
+
+    cost = Int('cost')
+    cost_constraint = cost == total_cost(states, problem.repository)
+    minimizer.add(cost_constraint)
+
+    minimizer.minimize(cost)
     return minimizer
 
 
