@@ -5,7 +5,7 @@ from solver.package.command import Command
 from solver.encode.state import generate_state_map
 from solver.decode import decode
 
-DEFAULT_TIME_STEPS = 100
+DEFAULT_TIME_STEPS = 200
 
 
 def solve(problem: DependencyProblem,
