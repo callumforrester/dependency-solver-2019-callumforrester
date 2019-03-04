@@ -3,6 +3,7 @@
 import sys
 import logging
 import json
+import time
 
 from typing import List
 
@@ -10,8 +11,11 @@ from solver.parse.problem import parse_problem
 from solver.parse.load import load_json
 from solver.solver import solve
 
+TIME_LIMIT_MS = 294000  # 4.9 minutes
+
 
 def main(argv: List[str]):
+    start_time = time.time()
     logging.basicConfig(level=logging.ERROR,
                         format='%(asctime)s, %(levelname)s: %(message)s')
     # Argparse
@@ -23,12 +27,19 @@ def main(argv: List[str]):
     problem = parse_problem(load_json(repository_path),
                             load_json(initial_state_path),
                             load_json(constraints_path))
-    solution = solve(problem)
+
+    timeout = int(time_left(start_time))
+    solution = solve(problem, timeout_ms=timeout)
     if solution is not None:
         commands = list(map(str, solution))
         print(json.dumps(commands))
     else:
         print('Impossible')
+
+
+def time_left(start_time: float) -> float:
+    elapsed_time = time.time() - start_time
+    return TIME_LIMIT_MS - elapsed_time
 
 
 if __name__ == '__main__':
