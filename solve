@@ -29,7 +29,7 @@ def main(argv: List[str]):
                             load_json(constraints_path))
 
     timeout = int(time_left(start_time))
-    solution = solve(problem, timeout_ms=timeout)
+    solution = solve(problem, time_steps=1000, timeout_ms=timeout)
     if solution is not None:
         commands = list(map(str, solution))
         print(json.dumps(commands))
