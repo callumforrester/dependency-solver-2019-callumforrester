@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+z3-solver = "*"
+tqdm = "*"
+
+[dev-packages]
+pytest = "*"
+autopep8 = "*"
+python-language-server = "*"
+mypy = "*"
+
+[requires]
+python_version = "3.7"
