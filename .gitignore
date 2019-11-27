@@ -1,6 +1,7 @@
 # Virtual Env #
 venv
 Pipfile.lock
+logging
 
 # Pycache #
 */__pycache__

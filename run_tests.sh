@@ -7,5 +7,5 @@ fi
 
 for f in $TESTS; do
   echo "Running $f"
-  ./solve $f/repository.json $f/initial.json $f/constraints.json
+  python solve $f/repository.json $f/initial.json $f/constraints.json
 done
